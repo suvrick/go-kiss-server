@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kiss</title>
+</head>
+
+<body>
+    <style>
+        .form_group {
+            margin: 150px auto;
+            display: flex;
+            flex-direction: column;
+            max-width: 350px;
+        }
+
+        input {
+            margin-bottom: 15px;
+            height: 25px;
+        }
+
+        label {
+            padding-bottom: 5px;
+        }
+
+        a {
+            margin-top: 20px;
+        }
+    </style>
+    <form action="login" method="POST">
+       
+        <div class="form_group">
+            <h2>Вход</h2>
+            <p>
+                {{ .error }}
+            </p>
+            <label for="email">E-mail</label>
+            <input id="email" type="email" required name="email">
+
+            <label for="password">Пароль</label>
+            <input id="password" type="password" required name="password">
+
+            <input type="submit" value="Войти">
+
+            <a href="/register" >Нет аккаунта?</a>
+        </div>
+    </form>
+</body>
+
+</html>

@@ -1,0 +1,355 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:100,300,400,500,700,900">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@mdi/font@5.x/css/materialdesignicons.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/vuetify@2.x/dist/vuetify.min.css">
+
+
+
+    <title>App</title>
+</head>
+
+
+<body>
+
+    <v-app id="app">
+        <v-main>
+            <!--MAIN FORM-->
+            <v-container>
+                <v-card class="overflow-hidden">
+                    <v-app-bar color="#6A76AB" dark prominent>
+                        <!-- <v-app-bar-nav-icon></v-app-bar-nav-icon> -->
+
+                        <v-card-title ml-5 style="width: 200px;">Kiss</v-card-title>
+
+                        <v-spacer></v-spacer>
+
+                        <v-btn v-if="!user" icon @click="openLoginDialog">
+                            <v-icon>mdi-login-variant </v-icon>
+                        </v-btn>
+
+                        <div v-if="user">
+
+                            <v-tooltip bottom>
+                                <template v-slot:activator="{ on, attrs }">
+                                    <v-btn tile v-bind="attrs" v-on="on" icon @click="fileClick">
+                                        <input hidden type="file" @change="fileChange" id="file">
+                                    <v-icon>mdi-folder-upload </v-icon>
+                                </v-btn>
+                                </template>
+                                <span>Загрузить</span>
+                              </v-tooltip>
+
+                            
+
+                        
+                            <v-menu offset-y>
+                                <template v-slot:activator="{ on, attrs }">
+                                    <v-btn tile color="white" icon v-bind="attrs" v-on="on">
+                                        <v-icon>mdi-dots-vertical</v-icon>
+                                    </v-btn>
+                                </template>
+                                <v-list>
+                                    <v-list-item link>
+                                        <v-list-item-title>
+                                            Профиль
+                                        </v-list-item-title>
+                                    </v-list-item>
+                                    <v-list-item link>
+                                        <v-list-item-title @click="logout">
+                                            Выйти
+                                        </v-list-item-title>
+                                    </v-list-item>
+                                </v-list>
+                            </v-menu>
+
+                        </div>
+
+                        <template v-slot:extension>
+                            <v-tabs v-model="tab" align-with-title>
+                                <v-tab>Главная</v-tab>
+                                <v-tab v-if="user" >Боты</v-tab>
+                            </v-tabs>
+                        </template>
+                    </v-app-bar>
+
+                    <v-container style="height: 70vh;">
+                        <v-tabs-items v-model="tab">
+                            <v-tab-item>
+                                <v-card style="margin: 15px;" max-width="400">
+                                    <v-app-bar flat color="rgba(0, 0, 0, 0)">
+
+                                        <v-toolbar-title class="title pl-0">
+                                            Статистика
+                                        </v-toolbar-title>
+
+                                        <v-spacer></v-spacer>
+
+                                        <v-btn icon>
+                                            <v-icon>mdi-dots-vertical</v-icon>
+                                        </v-btn>
+                                    </v-app-bar>
+                                    <v-card-text>
+                                        <v-row align="center">
+                                            <v-col class="display-3" cols="6">
+                                                {{ bots.length }}
+                                            </v-col>
+                                        </v-row>
+                                    </v-card-text>
+                                </v-card>
+                            </v-tab-item>
+                            <v-tab-item v-if="user">
+                                <v-list three-line>
+                                    <template v-for="(item, index) in items">
+                                        <v-subheader v-if="item.header" :key="item.header" v-text="item.header">
+                                        </v-subheader>
+
+                                        <v-divider v-else-if="item.divider" :key="index" :inset="item.inset">
+                                        </v-divider>
+
+                                        <v-list-item v-else :key="item.title">
+                                            <v-list-item-avatar>
+                                                <v-img :src="item.avatar"></v-img>
+                                            </v-list-item-avatar>
+
+                                            <v-list-item-content>
+                                                <v-list-item-title v-html="item.title"></v-list-item-title>
+                                                <v-list-item-subtitle v-html="item.subtitle"></v-list-item-subtitle>
+                                            </v-list-item-content>
+                                        </v-list-item>
+                                    </template>
+                                </v-list>
+                            </v-tab-item>
+                        </v-tabs-items>
+
+                        <v-dialog v-model="loginDialog" max-width="400">
+                            <v-card class="mx-auto">
+                                <v-img class="white--text align-end" height="200px"
+                                    src="https://cdn.vuetifyjs.com/images/cards/docks.jpg">
+                                    <v-card-title>Войти</v-card-title>
+                                </v-img>
+
+
+                                <v-card-subtitle red class="pb-0">
+                                    <br>
+                                    <br>
+                                    <p>
+                                        {{ loginMsgError }}
+                                    </p>
+                                </v-card-subtitle>
+
+                                <v-card-text class="text--primary">
+                                    <v-text-field label="EMAIL" v-model="email" outlined></v-text-field>
+                                    <v-text-field label="PASSWORD" v-model="password" outlined></v-text-field>
+                                </v-card-text>
+
+                                <v-card-subtitle red class="pb-0">
+                                    <a href="#" @click="openRegisterDialog">Регистрация</a>
+                                </v-card-subtitle>
+
+                                
+
+                                <v-card-actions>
+                                    <v-btn depressed color="primary" @click="login"> Войти </v-btn>
+                                </v-card-actions>
+                            </v-card>
+                        </v-dialog>
+
+                        <v-dialog v-model="registerDialog" max-width="400">
+                            <v-card class="mx-auto">
+                                <v-img class="white--text align-end" height="200px"
+                                    src="https://cdn.vuetifyjs.com/images/cards/docks.jpg">
+                                    <v-card-title>Регистрация</v-card-title>
+                                </v-img>
+
+
+                                <v-card-subtitle red class="pb-0">
+                                    <br>
+                                    <br>
+                                    <p>
+                                        {{ registerMsgError }}
+                                    </p>
+                                </v-card-subtitle>
+
+                                <v-card-text class="text--primary">
+                                    <v-text-field label="EMAIL" v-model="email"  outlined></v-text-field>
+                                    <v-text-field label="PASSWORD" v-model="password"  outlined></v-text-field>
+                                    <v-text-field label="PASSWORD" v-model="password2"  outlined></v-text-field>
+                                </v-card-text>
+                                <v-card-subtitle red class="pb-0">
+                                    <a href="#" @click="openLoginDialog">Уже есть аккаунт</a>
+                                </v-card-subtitle>
+                                <v-card-actions>
+                                    <v-btn depressed color="primary" @click="register"> Создать </v-btn>
+                                </v-card-actions>
+                            </v-card>
+                        </v-dialog>
+                    </v-container>
+
+                </v-card>
+            </v-container>
+        </v-main>
+    </v-app>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/vue/2.6.11/vue.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/vuetify@2.x/dist/vuetify.js"></script>
+    <script>
+        new Vue({
+            el: "#app",
+            vuetify: new Vuetify(),
+            data: {
+                user: null,
+                email: "",
+                password: "",
+                password2: "",
+                loginDialog: false,
+                loginMsgError: "",
+                registerDialog: false,
+                registerMsgError: "",
+                tab: 3,
+                bots: [],
+                items: [
+                    { header: 'Today' },
+                    {
+                        avatar: 'https://cdn.vuetifyjs.com/images/lists/1.jpg',
+                        title: 'Brunch this weekend?',
+                        subtitle: `<span class="text--primary">Ali Connors</span> &mdash; I'll be in your neighborhood doing errands this weekend. Do you want to hang out?`,
+                    },
+                    { divider: true, inset: true },
+                    {
+                        avatar: 'https://cdn.vuetifyjs.com/images/lists/2.jpg',
+                        title: 'Summer BBQ <span class="grey--text text--lighten-1">4</span>',
+                        subtitle: `<span class="text--primary">to Alex, Scott, Jennifer</span> &mdash; Wish I could come, but I'm out of town this weekend.`,
+                    },
+                    { divider: true, inset: true },
+                    {
+                        avatar: 'https://cdn.vuetifyjs.com/images/lists/3.jpg',
+                        title: 'Oui oui',
+                        subtitle: '<span class="text--primary">Sandra Adams</span> &mdash; Do you have Paris recommendations? Have you ever been?',
+                    },
+                    { divider: true, inset: true },
+                    {
+                        avatar: 'https://cdn.vuetifyjs.com/images/lists/4.jpg',
+                        title: 'Birthday gift',
+                        subtitle: '<span class="text--primary">Trevor Hansen</span> &mdash; Have any ideas about what we should get Heidi for her birthday?',
+                    },
+                    { divider: true, inset: true },
+                    {
+                        avatar: 'https://cdn.vuetifyjs.com/images/lists/5.jpg',
+                        title: 'Recipe to try',
+                        subtitle: '<span class="text--primary">Britta Holt</span> &mdash; We should eat this: Grate, Squash, Corn, and tomatillo Tacos.',
+                    },
+                ],
+            },
+            methods: {
+                async register() {
+
+                    if (!this.email || !this.password || (this.password != this.password2)) {
+                        this.registerMsgError = "Invalid login or password"
+                        return
+                    }
+
+                    let response = await fetch('user/register', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json;charset=utf-8'
+                        },
+                        body: JSON.stringify({ email: this.email, password: this.password })
+                    });
+
+                    let result = await response.json();
+                    console.log(result);
+
+                    if (result.Error) {
+                        this.registerMsgError = result.Error;
+                        return
+                    }
+
+                    this.registerDialog = false;
+                },
+                async login() {
+
+                    let response = await fetch('/user/login', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json;charset=utf-8'
+                        },
+                        body: JSON.stringify({ email: this.email, password: this.password })
+                    });
+
+                    let result = await response.json();
+                    console.log(result);
+
+                    if (result.Error) {
+                        this.loginMsgError = result.Error;
+                        return
+                    }
+
+
+                    this.user = result.Data;
+                    this.loginDialog = false;
+                },
+                async logout() {
+                    let response = await fetch('/logout');
+                    location.href = '/'
+                },
+                openLoginDialog() {
+                    this.registerDialog = false
+                    this.email = ""
+                    this.password = ""
+                    this.loginMsgError = ""
+                    this.loginDialog = true
+                },
+                openRegisterDialog() {
+                    this.loginDialog = false
+                    this.email = ""
+                    this.password = ""
+                    this.password2 = ""
+                    this.registerMsgError = ""
+                    this.registerDialog = true
+                },
+                fileChange(e){
+                    var files = e.target.files;
+                    console.log(files)
+                    for (var i = 0; i < files.length; i++) {
+                        var file = files[i];
+
+                        var reader = new FileReader();
+                        reader.onload = ((evt) => { 
+                            var text = evt.target.result
+                            if (text) {
+                                var lines = text.split('\n')
+                                lines.forEach(element => {
+                                    this.bots.push(element)
+                                });
+                            }
+                        });
+                        reader.readAsText(file);
+                    }
+                },
+                fileClick(){
+                    file.click()
+                },
+            
+            },
+            async created() {
+                let response = await fetch('/user/who');
+                let result = await response.json();
+                console.log(result);
+
+                if (!result.Data.user) {
+                    return
+                }
+
+                this.user = result.Data.user
+            }
+        });
+    </script>
+
+</body>
+
+</html>
