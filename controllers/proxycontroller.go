@@ -1,112 +1,76 @@
 package controllers
 
 import (
-	"errors"
-	"fmt"
-	"net/http"
-	"strconv"
-
-	"github.com/suvrick/go-kiss-server/middlewares"
-	"github.com/suvrick/go-kiss-server/model"
-	"github.com/suvrick/go-kiss-server/store"
+	"github.com/gin-gonic/gin"
+	"github.com/suvrick/go-kiss-server/errors"
+	"github.com/suvrick/go-kiss-server/services"
 	"github.com/suvrick/go-kiss-server/until"
-
-	"github.com/gorilla/mux"
 )
 
 // ProxyController ...
 type ProxyController struct {
-	router          *mux.Router
-	proxyRepository *store.ProxyRepository
+	router       *gin.Engine
+	proxyService *services.ProxyService
 }
 
 // NewProxyController ...
-func NewProxyController(router *mux.Router, proxyRepository *store.ProxyRepository) *ProxyController {
-
+func NewProxyController(r *gin.Engine, s *services.ProxyService) *ProxyController {
 	ctrl := &ProxyController{
-		router:          router,
-		proxyRepository: proxyRepository,
+		router:       r,
+		proxyService: s,
 	}
-
-	proxy := ctrl.router.PathPrefix("/proxy").Subrouter()
-
-	proxy.Use(middlewares.AuthMiddlewareInstance.Do)
-
-	proxy.HandleFunc("/add", ctrl.addProxy()).Methods("POST")
-	proxy.HandleFunc("/all", ctrl.allProxy()).Methods("GET")
-	proxy.HandleFunc("/find", ctrl.findProxy()).Methods("GET")
-	proxy.HandleFunc("/free", ctrl.freeProxy()).Methods("GET")
+	proxy := ctrl.router.Group("/proxy")
+	proxy.POST("/add", ctrl.addHandler)
+	proxy.GET("/all", ctrl.allHandler)
+	proxy.GET("/free", ctrl.freeHandler)
+	proxy.GET("/deleteall", ctrl.deleteAllHandler)
 	return ctrl
 }
 
-// POST add proxy
-func (pc *ProxyController) addProxy() http.HandlerFunc {
+func (ctrl *ProxyController) allHandler(c *gin.Context) {
+	prxs, err := ctrl.proxyService.All()
 
-	type request struct {
-		Proxies []string `json: proxies`
-	}
-
-	return func(w http.ResponseWriter, r *http.Request) {
-
-		req := &request{}
-		if err := until.JSONBind(r, req); err != nil {
-			until.WriteResponse(w, r, http.StatusBadRequest, nil, err)
-			return
-		}
-
-		proxies := req.Proxies
-		result := make([]int, 0)
-		for _, item := range proxies {
-			p := model.NewProxy(item)
-
-			id, err := pc.proxyRepository.Create(p)
-			if err != nil {
-				fmt.Println(err.Error())
-				continue
-			}
-
-			result = append(result, id)
-		}
-
-		until.WriteResponse(w, r, 200, result, nil)
-	}
+	until.WriteResponse(c, 200, gin.H{
+		"count":   len(prxs),
+		"proxies": prxs,
+	}, err)
 }
 
-// GET all proxy
-func (pc *ProxyController) allProxy() http.HandlerFunc {
-	return func(w http.ResponseWriter, r *http.Request) {
-		p, err := pc.proxyRepository.All()
-		until.WriteResponse(w, r, http.StatusOK, p, err)
+func (ctrl *ProxyController) addHandler(c *gin.Context) {
+
+	type U struct {
+		Urls []string `json:"urls"`
 	}
+
+	urls := &U{}
+	if err := c.ShouldBindJSON(urls); err != nil {
+		until.WriteResponse(c, 200, nil, errors.ErrInvalidParam)
+		return
+	}
+
+	prxs, err := ctrl.proxyService.AddRange(urls.Urls)
+
+	until.WriteResponse(c, 200, gin.H{
+		"count":   len(prxs),
+		"proxies": prxs,
+	}, err)
 }
 
-// GET find proxy
-func (pc *ProxyController) findProxy() http.HandlerFunc {
-	return func(w http.ResponseWriter, r *http.Request) {
-
-		val, ok := r.URL.Query()["id"]
-
-		if !ok {
-			until.WriteResponse(w, r, http.StatusOK, nil, errors.New("Bad param"))
-			return
-		}
-
-		id, _ := strconv.ParseInt(val[0], 10, 32)
-
-		p, err := pc.proxyRepository.Find(int(id))
-		if err != nil {
-			until.WriteResponse(w, r, http.StatusOK, nil, err)
-			return
-		}
-
-		until.WriteResponse(w, r, http.StatusOK, p, nil)
-	}
+func (ctrl *ProxyController) freeHandler(c *gin.Context) {
+	proxy, err := ctrl.proxyService.Free()
+	until.WriteResponse(c, 200, gin.H{
+		"proxy": proxy,
+	}, err)
 }
 
-// GET free proxy
-func (pc *ProxyController) freeProxy() http.HandlerFunc {
-	return func(w http.ResponseWriter, r *http.Request) {
-		p, err := pc.proxyRepository.Free()
-		until.WriteResponse(w, r, http.StatusOK, p, err)
+func (ctrl *ProxyController) deleteAllHandler(c *gin.Context) {
+	err := ctrl.proxyService.DeleteAll()
+	ok := true
+	if err != nil {
+		ok = false
 	}
+
+	until.WriteResponse(c, 200, gin.H{
+		"ok": ok,
+	}, err)
 }

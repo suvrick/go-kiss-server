@@ -1,58 +1,56 @@
 package server
 
 import (
-	"database/sql"
-	"net/http"
-
 	"github.com/suvrick/go-kiss-server/controllers"
-	"github.com/suvrick/go-kiss-server/middlewares"
-	"github.com/suvrick/go-kiss-server/session"
-	"github.com/suvrick/go-kiss-server/store"
+	"github.com/suvrick/go-kiss-server/model"
+	"github.com/suvrick/go-kiss-server/repositories"
+	"github.com/suvrick/go-kiss-server/services"
 
-	"github.com/gorilla/mux"
-
-	_ "github.com/lib/pq" // ...
+	"github.com/gin-gonic/gin"
+	"gorm.io/driver/postgres"
+	"gorm.io/gorm"
 )
 
 // Start ...
 func Start(config *Config) error {
 
-	db, err := newDB(config.DatabaseURL)
+	db, err := createDB(config.DatabaseURL)
 	if err != nil {
 		return err
 	}
 
-	defer db.Close()
+	router := gin.Default()
 
-	router := mux.NewRouter()
+	userRepo := repositories.NewUserRepository(db)
+	proxyRepo := repositories.NewProxyRepository(db)
+	botRepo := repositories.NewBotRepository(db)
 
-	sg := session.NewSessionGame(config.SessionKey)
+	//middlewares.NewAuthMiddleWare(sg, userRepo)
+	userService := services.NewUserService(userRepo)
+	proxyService := services.NewProxyService(proxyRepo)
+	botService := services.NewBotService(botRepo, userService, proxyService)
 
-	userRepo := store.NewUserRepository(db)
-	proxyRepo := store.NewProxyRepository(db)
+	controllers.NewUserController(router, userService)
+	controllers.NewBotController(router, botService, userService)
+	controllers.NewProxyController(router, proxyService)
 
-	middlewares.NewAuthMiddleWare(sg, userRepo)
-
-	controllers.NewUserController(router, userRepo, sg)
-	controllers.NewProxyController(router, proxyRepo)
-
-	router.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
-		http.ServeFile(w, r, "www/index.html")
-	})
+	controllers.NewAdminController(router, userService)
+	// router.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
+	// 	http.ServeFile(w, r, "www/index.html")
+	// })
 
 	//return http.ListenAndServeTLS(":443", "../certs/cert.crt", "../certs/pk.key", srv)
-	return http.ListenAndServe(config.BindAddr, router)
+	return router.Run(config.BindAddr)
 }
 
-func newDB(dbURL string) (*sql.DB, error) {
-	db, err := sql.Open("postgres", dbURL)
-	if err != nil {
-		return nil, err
-	}
+func createDB(dbURL string) (*gorm.DB, error) {
 
-	if err := db.Ping(); err != nil {
-		return nil, err
-	}
+	db, err := gorm.Open(postgres.Open(dbURL), &gorm.Config{})
 
-	return db, nil
+	// Migrate the schema
+	db.AutoMigrate(&model.User{})
+	db.AutoMigrate(&model.Bot{})
+	db.AutoMigrate(&model.Proxy{})
+
+	return db, err
 }

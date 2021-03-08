@@ -1,39 +1,45 @@
 package until
 
 import (
-	"encoding/json"
-	"log"
-	"net/http"
+	"strconv"
+
+	"github.com/gin-gonic/gin"
+	"github.com/suvrick/go-kiss-server/errors"
+	"github.com/suvrick/go-kiss-server/model"
 )
 
 // Response ...
 type Response struct {
-	Code  int         `json:code`
-	Error string      `json:error`
-	Data  interface{} `json:data`
+	Code  int         `json:"code"`
+	Error string      `json:"error"`
+	Data  interface{} `json:"data"`
 }
 
 // WriteResponse ...
-func WriteResponse(w http.ResponseWriter, r *http.Request, code int, data interface{}, err error) {
+func WriteResponse(c *gin.Context, code int, data gin.H, err error) {
 	var msgErr string
 	if err != nil {
 		msgErr = err.Error()
 	}
 
-	res := &Response{
+	response := &Response{
 		Code:  code,
 		Data:  data,
 		Error: msgErr,
 	}
 
-	w.WriteHeader(res.Code)
-
-	if err := json.NewEncoder(w).Encode(res); err != nil {
-		log.Println(err.Error())
-	}
+	c.JSON(code, response)
+	c.Abort()
 }
 
-// JSONBind ...
-func JSONBind(r *http.Request, strct interface{}) error {
-	return json.NewDecoder(r.Body).Decode(&strct)
+// GetUserFromContext ...
+func GetUserFromContext(c *gin.Context) (string, model.User, error) {
+
+	u, ok := c.Get("user")
+	if !ok {
+		return "", model.User{}, errors.ErrNotAuthenticated
+	}
+
+	user := u.(model.User)
+	return strconv.Itoa(user.ID), user, nil
 }

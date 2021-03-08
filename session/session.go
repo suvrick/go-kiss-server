@@ -1,17 +1,10 @@
 package session
 
-import "github.com/gorilla/sessions"
+import "github.com/suvrick/go-kiss-server/model"
 
-// GameSession ...
-type GameSession struct {
-	CurrentSession sessions.Store
-	SessionName    string
-}
+// Accounts ...
+var Accounts map[string]model.User
 
-// NewSessionGame ...
-func NewSessionGame(key string) *GameSession {
-	return &GameSession{
-		SessionName:    "hw",
-		CurrentSession: sessions.NewCookieStore([]byte(key)),
-	}
+func init() {
+	Accounts = make(map[string]model.User, 0)
 }
