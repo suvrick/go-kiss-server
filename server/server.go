@@ -1,7 +1,10 @@
 package server
 
 import (
+	"net/http"
+
 	"github.com/suvrick/go-kiss-server/controllers"
+	"github.com/suvrick/go-kiss-server/middlewares"
 	"github.com/suvrick/go-kiss-server/model"
 	"github.com/suvrick/go-kiss-server/repositories"
 	"github.com/suvrick/go-kiss-server/services"
@@ -20,26 +23,34 @@ func Start(config *Config) error {
 	}
 
 	router := gin.Default()
+	router.Use(middlewares.CORSMiddleware())
 
 	userRepo := repositories.NewUserRepository(db)
 	proxyRepo := repositories.NewProxyRepository(db)
 	botRepo := repositories.NewBotRepository(db)
+	kissRepo := repositories.NewAutoKissRepository(db)
+	stateRepo := repositories.NewStateDowloadRepository(db)
 
 	//middlewares.NewAuthMiddleWare(sg, userRepo)
 	userService := services.NewUserService(userRepo)
 	proxyService := services.NewProxyService(proxyRepo)
 	botService := services.NewBotService(botRepo, userService, proxyService)
+	kissService := services.NewAutoKissService(kissRepo)
+	stateDownloadService := services.NewStateDownloadService(stateRepo)
+
+	controllers.NewAutoKissController(router, kissService, stateDownloadService)
 
 	controllers.NewUserController(router, userService)
 	controllers.NewBotController(router, botService, userService)
 	controllers.NewProxyController(router, proxyService)
 
-	controllers.NewAdminController(router, userService)
-	// router.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
-	// 	http.ServeFile(w, r, "www/index.html")
-	// })
+	controllers.NewAdminController(router, userService, kissService, stateDownloadService)
 
-	//return http.ListenAndServeTLS(":443", "../certs/cert.crt", "../certs/pk.key", srv)
+	router.GET("", func(c *gin.Context) {
+		c.File("www/index.html")
+	})
+
+	return http.ListenAndServeTLS(":443", "../certs/cert.crt", "../certs/pk.key", srv)
 	return router.Run(config.BindAddr)
 }
 
@@ -51,6 +62,8 @@ func createDB(dbURL string) (*gorm.DB, error) {
 	db.AutoMigrate(&model.User{})
 	db.AutoMigrate(&model.Bot{})
 	db.AutoMigrate(&model.Proxy{})
+	db.AutoMigrate(&model.KissUser{})
+	db.AutoMigrate(&model.KissState{})
 
 	return db, err
 }

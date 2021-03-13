@@ -1,0 +1,57 @@
+.btn {
+    font-size: 15px;
+    padding: 10px;
+    border-radius: 25px;
+    cursor: pointer;
+    color: white;
+    background: rgba(0, 0, 0, .45)
+}
+
+.menu {
+    width: 300px;
+    height: 200px;
+    background: #644da7;
+    color: white;
+    position: fixed;
+    left: 0;
+    top: 0;
+    font-size: 15px;
+    z-index: 9;
+    border-bottom-right-radius: 50px;
+    display: none;
+}
+
+.menu input {
+    -webkit-appearance: checkbox;
+}
+
+.menu ul {
+    list-style: none;
+}
+
+
+.menu ul li label{
+    padding: 5px;
+    cursor: pointer;
+    display: inline-block;
+    width: 200px;
+    text-transform: uppercase;
+    font-size: 10px;
+}
+
+.menu ul li label:hover{
+    background: rgba(0, 0, 0, .25);
+}
+
+#btnClose {
+    position: absolute;
+    color: white;
+    top: 20px;
+    right: 25px;
+    padding: 0 5px;
+    cursor: pointer;
+}
+
+#btnClose:hover {
+    background: rgba(0,0, 0, .2);
+}

@@ -1,6 +1,7 @@
 package controllers
 
 import (
+	"fmt"
 	"github.com/gin-gonic/gin"
 	"github.com/suvrick/go-kiss-server/errors"
 	"github.com/suvrick/go-kiss-server/middlewares"
@@ -112,7 +113,7 @@ func (ctrl *UserController) loginHandler(c *gin.Context) {
 func (ctrl *UserController) getUserHandler(c *gin.Context) {
 
 	_, user, err := until.GetUserFromContext(c)
-
+	fmt.Println(user)
 	until.WriteResponse(c, 200, gin.H{
 		"user": user,
 	}, err)

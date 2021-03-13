@@ -77,10 +77,10 @@ func (s *BotService) UpdateBot(bot model.Bot) {
 // CheckActualUser ...
 func (s *BotService) CheckActualUser(userID string, user model.User) error {
 
-	currentDate, _ := time.Parse("2006-01-02", user.Date)
+	userDate, _ := time.Parse("2006-01-02", user.Date)
 	nowDate := time.Now()
 
-	if currentDate.Unix() < nowDate.Unix() {
+	if userDate.Unix() < nowDate.Unix() {
 		return errors.ErrNeedTime
 	}
 
@@ -97,7 +97,7 @@ func (s *BotService) InGame(bot *model.Bot) (*model.Bot, error) {
 	p, err := s.proxyService.Free()
 
 	if err != nil {
-		return nil, err
+		return bot, err
 	}
 
 	botGame := models.NewBotWhitProxy(bot.LoginParams.FrameURL, p.URL)
@@ -124,8 +124,12 @@ func (s *BotService) All(c *gin.Context) ([]*model.Bot, error) {
 		return nil, err
 	}
 
-	fmt.Println(userID)
-	fmt.Println(user)
+	userDate, _ := time.Parse("2006-01-02", user.Date)
+	nowDate := time.Now()
+
+	if userDate.Unix() < nowDate.Unix() {
+		return nil, errors.ErrNeedTime
+	}
 
 	return s.botRepository.All(userID)
 }

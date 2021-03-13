@@ -3,9 +3,8 @@ package main
 import (
 	"log"
 
-	"github.com/suvrick/go-kiss-server/server"
-
 	"github.com/BurntSushi/toml"
+	"github.com/suvrick/go-kiss-server/server"
 )
 
 func main() {
