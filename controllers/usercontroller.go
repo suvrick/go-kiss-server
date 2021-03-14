@@ -2,6 +2,7 @@ package controllers
 
 import (
 	"fmt"
+
 	"github.com/gin-gonic/gin"
 	"github.com/suvrick/go-kiss-server/errors"
 	"github.com/suvrick/go-kiss-server/middlewares"
@@ -97,7 +98,7 @@ func (ctrl *UserController) loginHandler(c *gin.Context) {
 	user, err := ctrl.userService.Login(c, login.Login, login.Password)
 
 	if err != nil {
-		until.WriteResponse(c, 200, gin.H{
+		until.WriteResponse(c, 403, gin.H{
 			"result": "ok",
 			"user":   user,
 		}, errors.ErrIncorrectEmailOrPassword)

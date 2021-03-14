@@ -3,6 +3,7 @@ package controllers
 import (
 	"github.com/gin-gonic/gin"
 	"github.com/suvrick/go-kiss-server/errors"
+	"github.com/suvrick/go-kiss-server/middlewares"
 	"github.com/suvrick/go-kiss-server/services"
 	"github.com/suvrick/go-kiss-server/until"
 )
@@ -20,6 +21,9 @@ func NewProxyController(r *gin.Engine, s *services.ProxyService) *ProxyControlle
 		proxyService: s,
 	}
 	proxy := ctrl.router.Group("/proxy")
+
+	proxy.Use(middlewares.AuthMiddleware()).Use(middlewares.AdminMiddleware())
+
 	proxy.POST("/add", ctrl.addHandler)
 	proxy.GET("/all", ctrl.allHandler)
 	proxy.GET("/free", ctrl.freeHandler)

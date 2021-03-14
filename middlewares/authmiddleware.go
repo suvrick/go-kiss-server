@@ -15,7 +15,7 @@ func AuthMiddleware() gin.HandlerFunc {
 
 		if err != nil {
 
-			until.WriteResponse(c, 200, gin.H{
+			until.WriteResponse(c, 403, gin.H{
 				"result": "fail",
 			}, errors.ErrNotAuthenticated)
 			c.Abort()
@@ -27,7 +27,7 @@ func AuthMiddleware() gin.HandlerFunc {
 		user, ok := session.Accounts[token]
 
 		if !ok {
-			until.WriteResponse(c, 200, gin.H{
+			until.WriteResponse(c, 403, gin.H{
 				"result": "fail",
 			}, errors.ErrNotAuthenticated)
 			c.Abort()

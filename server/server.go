@@ -46,12 +46,12 @@ func Start(config *Config) error {
 
 	controllers.NewAdminController(router, userService, kissService, stateDownloadService)
 
-	router.GET("", func(c *gin.Context) {
+	router.GET("/", func(c *gin.Context) {
 		c.File("www/index.html")
 	})
 
-	return http.ListenAndServeTLS(":443", "../certs/cert.crt", "../certs/pk.key", srv)
-	return router.Run(config.BindAddr)
+	return http.ListenAndServeTLS(":443", "../certs/cert.crt", "../certs/pk.key", router)
+	//return router.Run(config.BindAddr)
 }
 
 func createDB(dbURL string) (*gorm.DB, error) {

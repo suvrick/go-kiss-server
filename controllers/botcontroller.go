@@ -42,15 +42,22 @@ func (ctrl *BotController) addHandler(c *gin.Context) {
 
 	postForm := &U{}
 	if err := c.ShouldBindJSON(postForm); err != nil {
-		until.WriteResponse(c, 200, nil, errors.ErrInvalidParam)
+		until.WriteResponse(c, 403, nil, errors.ErrInvalidParam)
 		return
 	}
 
 	bot, err := ctrl.botService.Add(c, postForm.URL)
 
+	if err != nil {
+		until.WriteResponse(c, 200, gin.H{
+			"bot": bot,
+		}, err)
+		return
+	}
+
 	until.WriteResponse(c, 200, gin.H{
 		"bot": bot,
-	}, err)
+	}, nil)
 }
 
 func (ctrl *BotController) allHandler(c *gin.Context) {
@@ -74,9 +81,13 @@ func (ctrl *BotController) removeHandler(c *gin.Context) {
 	ok := true
 	if err != nil {
 		ok = false
+		until.WriteResponse(c, 200, gin.H{
+			"result": "fail",
+		}, err)
+		return
 	}
 
 	until.WriteResponse(c, 200, gin.H{
 		"result": ok,
-	}, err)
+	}, nil)
 }

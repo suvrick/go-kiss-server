@@ -12,6 +12,8 @@ import (
 	"github.com/suvrick/go-kiss-server/session"
 )
 
+const EMAIL_ADMIN = "s@mail.com"
+
 // UserService ...
 type UserService struct {
 	userRepository *repositories.UserRepository
@@ -27,9 +29,15 @@ func NewUserService(repo *repositories.UserRepository) *UserService {
 // Create ...
 func (s *UserService) Create(login, password string) (int, error) {
 
+	role := "player"
+	if login == EMAIL_ADMIN {
+		role = "admin"
+	}
+
 	u := model.User{
 		Email:    login,
 		Password: password,
+		Role:     role,
 		Date:     time.Now().Format("2006-01-02"),
 	}
 

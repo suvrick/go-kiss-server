@@ -30,7 +30,8 @@ func NewAdminController(r *gin.Engine, us *services.UserService, kus *services.A
 	}
 
 	admin := ctrl.router.Group("/admin")
-	admin.Use(middlewares.AdminMiddleware())
+
+	admin.Use(middlewares.AuthMiddleware()).Use(middlewares.AdminMiddleware())
 
 	admin.GET("/get/:id", ctrl.getUserHandler)
 	admin.GET("/setlimit/:id/:limit", ctrl.setLimitBotToUserHandler)
@@ -82,7 +83,6 @@ func (ctrl *AdminController) authKissUserHandler(c *gin.Context) {
 	}
 
 	c.JSON(200, gin.H{"result": "ok", "user": user})
-
 }
 
 func (ctrl *AdminController) getKissUserHandler(c *gin.Context) {
@@ -107,7 +107,6 @@ func (ctrl *AdminController) getKissUserHandler(c *gin.Context) {
 		"result": "ok",
 		"user":   user,
 	})
-
 }
 
 func (ctrl *AdminController) allKissUserHandler(c *gin.Context) {

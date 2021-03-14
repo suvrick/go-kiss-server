@@ -85,6 +85,7 @@ func (s *AutoKissService) Do(ID int, t uint16, data []byte) *model.KissResponse 
 				return res
 			}
 
+			res.Status = 200
 			res.Code = 28
 			res.Data = []interface{}{0}
 			res.Delay = 5000
