@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login</title>
+</head>
+<body>
+    <style>
+        .container {
+            max-width: 1000px;
+            margin: 100px auto;
+            display: flex;
+            justify-content: center;
+        }
+
+        .form {    
+            display: flex;
+            flex-direction: column;display: flex;
+        }
+    </style>
+   <div class="container">
+        <div class="form">
+            <h2>Login</h2>
+            <label for="email">email</label>
+            <input type="email" id="email">
+            
+            <label for="password">password</label>
+            <input type="password" id="password">
+    
+            <p>
+                <button onclick="send()">Enter</button>
+            </p>
+        </div>
+   </div>
+   <script>
+       function send() {
+           var email = document.getElementById("email")
+           var password = document.getElementById("password")
+           var data = {
+               email: email.value,
+               password: password.value
+           } 
+           fetch("user/login", {method: "POST", body: JSON.stringify(data)}).then( res => res.json()).then( r => {
+               if (r.code === 200) {
+                   document.location.href = "/admin"
+               }
+           })
+       }
+   </script>
+</body>
+</html>

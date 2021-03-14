@@ -1,8 +1,6 @@
 package server
 
 import (
-	"net/http"
-
 	"github.com/suvrick/go-kiss-server/controllers"
 	"github.com/suvrick/go-kiss-server/middlewares"
 	"github.com/suvrick/go-kiss-server/model"
@@ -46,12 +44,24 @@ func Start(config *Config) error {
 
 	controllers.NewAdminController(router, userService, kissService, stateDownloadService)
 
-	router.GET("/", func(c *gin.Context) {
-		c.File("www/index.html")
+	router.GET("", func(c *gin.Context) {
+		c.File("www/autokiss/index.html")
 	})
 
-	return http.ListenAndServeTLS(":443", "../certs/cert.crt", "../certs/pk.key", router)
-	//return router.Run(config.BindAddr)
+	router.GET("/login", func(c *gin.Context) {
+		c.File("www/login.html")
+	})
+
+	router.GET("/register", func(c *gin.Context) {
+		c.File("www/register.html")
+	})
+
+	router.GET("/admin", func(c *gin.Context) {
+		c.File("www/admin.html")
+	})
+
+	//return http.ListenAndServeTLS(":443", "../certs/cert.crt", "../certs/pk.key", router)
+	return router.Run(config.BindAddr)
 }
 
 func createDB(dbURL string) (*gorm.DB, error) {
