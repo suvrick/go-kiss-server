@@ -9,11 +9,12 @@ func CORSMiddleware() gin.HandlerFunc {
 	return func(c *gin.Context) {
 
 		w := c.Writer
-		r := c.Request
+		//r := c.Request
 
 		// js-ajax handling cross-domain issues
-		w.Header().Set("Access-Control-Allow-Origin", r.Header.Get("Origin"))
-		w.Header().Set("Access-Control-Allow-Methods", "GET, OPTIONS, POST, PUT")
+		//w.Header().Set("Access-Control-Allow-Origin", r.Header.Get("Origin"))
+		w.Header().Set("Access-Control-Allow-Origin", "*")
+		w.Header().Set("Access-Control-Allow-Methods", "GET, POST, OPTIONS, PUT")
 		w.Header().Add("Access-Control-Allow-Headers", "Access-Control-Allow-Headers, Origin, X-Requested-With, Content-Type, Accept, Cookie")
 		w.Header().Set("Access-Control-Allow-Credentials", "true")
 

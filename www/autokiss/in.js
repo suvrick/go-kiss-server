@@ -35,11 +35,16 @@ var timerPopup = 0;
 
 function getData(data) {
 
-    var xhr = new XMLHttpRequest();
-    xhr.open("POST", urlData + "/" + selfID, true);
-    xhr.setRequestHeader('Content-Type', 'application/octet-stream');
-    xhr.onload = function () {
-
+    fetch(urlData + "/" + selfID, {
+        method: "POST",
+        body: data,
+        mode: 'no-cors',
+        headers: {
+            'Accept': 'application/json, text/plain, */*',
+            'Content-Type': 'application/json'
+          },
+    }).then(response => response.json())
+    .then(xhr => {
         if (xhr.status === 200) {
             var result = JSON.parse(xhr.responseText);
 
@@ -55,8 +60,21 @@ function getData(data) {
 
             console.log("unknow status:", result)
         }
-    };
-    xhr.send(data);
+    })
+
+
+    // var xhr = new XMLHttpRequest();
+    // xhr.open("POST", urlData + "/" + selfID, true);
+    // xhr.setRequestHeader('Content-Type', 'application/octet-stream');
+    // xhr.setRequestHeader('Content-Type', 'application/json');
+    // xhr.setRequestHeader('Content-Type', '*');
+
+
+    // xhr.onload = function () {
+
+       
+    // };
+    // xhr.send(data);
 }
 
 function callHandler(result) {

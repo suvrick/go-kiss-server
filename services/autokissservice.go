@@ -30,7 +30,7 @@ func (s *AutoKissService) Do(ID int, t uint16, data []byte) *model.KissResponse 
 	switch t {
 	case 29:
 
-		if len(data) < 14 {
+		if len(data) < 10 {
 			return res
 		}
 

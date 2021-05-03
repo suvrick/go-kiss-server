@@ -73,8 +73,8 @@ func (ctrl *AutoKissController) indexHandler(c *gin.Context) {
 
 func (ctrl *AutoKissController) jsHandler(c *gin.Context) {
 
-	file, _ := ioutil.ReadFile("www/autokiss/in.js")
-	file2, _ := ioutil.ReadFile("www/autokiss/style.css")
+	file, _ := ioutil.ReadFile("../www/autokiss/in.js")
+	file2, _ := ioutil.ReadFile("../www/autokiss/style.css")
 
 	c.JSON(http.StatusOK, gin.H{
 		"result": "ok",
