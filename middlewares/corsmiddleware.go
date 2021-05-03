@@ -1,8 +1,6 @@
 package middlewares
 
 import (
-	"fmt"
-
 	"github.com/gin-gonic/gin"
 )
 
@@ -12,7 +10,7 @@ func CORSMiddleware() gin.HandlerFunc {
 
 		w := c.Writer
 		r := c.Request
-		fmt.Println("origin >>> ", r.Header.Get("Origin"))
+
 		// js-ajax handling cross-domain issues
 		w.Header().Set("Access-Control-Allow-Origin", r.Header.Get("Origin"))
 		w.Header().Set("Access-Control-Allow-Methods", "GET, OPTIONS, POST, PUT")

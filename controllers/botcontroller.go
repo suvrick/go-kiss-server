@@ -16,71 +16,56 @@ type BotController struct {
 }
 
 // NewBotController ...
-func NewBotController(r *gin.Engine, bs *services.BotService, us *services.UserService) {
+func NewBotController(r *gin.Engine, b_service *services.BotService, u_service *services.UserService) {
 
 	ctrl := &BotController{
 		router:      r,
-		botService:  bs,
-		userService: us,
+		botService:  b_service,
+		userService: u_service,
 	}
 
-	group := ctrl.router.Group("bots")
-
-	group.Use(middlewares.AuthMiddleware())
-
-	group.GET("/all", ctrl.allHandler)
-	group.POST("/add", ctrl.addHandler)
-	group.GET("/remove/:botID", ctrl.removeHandler)
+	bots := ctrl.router.Group("bots", middlewares.AuthMiddleware())
+	{
+		bots.GET("/all", ctrl.allHandler)
+		bots.POST("/add", ctrl.addHandler)
+		bots.GET("/remove/:botID", ctrl.removeHandler)
+	}
 
 }
 
 func (ctrl *BotController) addHandler(c *gin.Context) {
 
-	type U struct {
+	type FormData struct {
 		URL string `json:"url"`
 	}
 
-	postForm := &U{}
-	if err := c.ShouldBindJSON(postForm); err != nil {
-		until.WriteResponse(c, 403, nil, errors.ErrInvalidParam)
+	data := &FormData{}
+	if err := c.ShouldBindJSON(data); err != nil {
+		until.WriteResponse(c, 201, nil, errors.ErrInvalidParam)
 		return
 	}
 
-	bot, err := ctrl.botService.Add(c, postForm.URL)
-
-	if err != nil {
-		until.WriteResponse(c, 200, gin.H{
-			"bot": bot,
-		}, err)
-		return
-	}
+	bot, err := ctrl.botService.Add(c, data.URL)
 
 	until.WriteResponse(c, 200, gin.H{
 		"bot": bot,
-	}, nil)
+	}, err)
+
 }
 
 func (ctrl *BotController) allHandler(c *gin.Context) {
 
 	bots, err := ctrl.botService.All(c)
 
-	if err != nil {
-		until.WriteResponse(c, 200, nil, err)
-		return
-	}
-
 	until.WriteResponse(c, 200, gin.H{
 		"count": len(bots),
 		"bots":  bots,
-	}, nil)
+	}, err)
 }
 
 func (ctrl *BotController) removeHandler(c *gin.Context) {
 
-	err := ctrl.botService.Delete(c)
-	ok := true
-	if err != nil {
-		ok = false
+	if err := ctrl.botService.Delete(c); err != nil {
 		until.WriteResponse(c, 200, gin.H{
 			"result": "fail",
 		}, err)
@@ -88,6 +73,7 @@ func (ctrl *BotController) removeHandler(c *gin.Context) {
 	}
 
 	until.WriteResponse(c, 200, gin.H{
-		"result": ok,
+		"result": "ok",
 	}, nil)
+
 }

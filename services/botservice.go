@@ -1,81 +1,112 @@
 package services
 
 import (
-	"fmt"
-	"strconv"
+	"sync"
 	"time"
 
 	"github.com/gin-gonic/gin"
-	"github.com/suvrick/go-kiss-core/models"
-	"github.com/suvrick/go-kiss-core/parser"
-	"github.com/suvrick/go-kiss-core/ws"
 	"github.com/suvrick/go-kiss-server/errors"
+	"github.com/suvrick/go-kiss-server/game/models"
+	"github.com/suvrick/go-kiss-server/game/ws"
 	"github.com/suvrick/go-kiss-server/model"
 	"github.com/suvrick/go-kiss-server/repositories"
-	"github.com/suvrick/go-kiss-server/until"
+	"github.com/suvrick/go-kiss-server/session"
 )
 
 // BotService ...
 type BotService struct {
-	botRepository *repositories.BotRepository
 	userService   *UserService
 	proxyService  *ProxyService
+	botRepository *repositories.BotRepository
+
+	locker *sync.Mutex
 }
 
 // NewBotService ...
 func NewBotService(repo *repositories.BotRepository, us *UserService, ps *ProxyService) *BotService {
 	return &BotService{
-		botRepository: repo,
 		userService:   us,
 		proxyService:  ps,
+		botRepository: repo,
+
+		locker: &sync.Mutex{},
 	}
 }
 
 // Add ...
-func (s *BotService) Add(c *gin.Context, url string) (*model.Bot, error) {
+func (s *BotService) Add(c *gin.Context, url string) (*models.Bot, error) {
 
-	userID, user, err := until.GetUserFromContext(c)
+	s.locker.Lock()
+	defer s.locker.Unlock()
+
+	user := *session.GetUser(c)
+
+	if err := s.checkActualUser(user); err != nil {
+		return nil, err
+	}
+
+	bot := models.NewBot(url)
+	bot.UserID = user.ID
+
+	gs := ws.NewSocket(bot)
+	gs.Go()
+
+	_, err := s.botRepository.Add(*bot)
+
 	if err != nil {
 		return nil, err
 	}
-
-	if err := s.CheckActualUser(userID, user); err != nil {
-		return nil, err
-	}
-
-	loginData := parser.NewLoginParams(url)
-	bot := model.Bot{
-		LoginParams: loginData,
-	}
-
-	bot.UserID = userID
-
-	botID, err := s.botRepository.Add(bot)
-	if err != nil {
-		return nil, err
-	}
-
-	bot.ID = botID
-	bot.DateUse = time.Now().Format("2006-01-02")
 
 	user.BotsCount++
-	s.userService.UpdateUser(user)
-
-	if _, err := s.InGame(&bot); err != nil {
-		return nil, err
+	if err := s.userService.UpdateUser(user); err != nil {
+		return bot, err
 	}
 
-	return &bot, nil
+	return bot, nil
 }
 
 // UpdateBot ...
-func (s *BotService) UpdateBot(bot model.Bot) {
-
+func (s *BotService) UpdateBot(bot models.Bot) {
 	s.botRepository.Update(bot)
 }
 
+// All ...
+func (s *BotService) All(c *gin.Context) ([]*models.Bot, error) {
+	user := session.GetUser(c)
+	return s.botRepository.All(user.ID)
+}
+
+// Delete ...
+func (s *BotService) Delete(c *gin.Context) error {
+
+	s.locker.Lock()
+	defer s.locker.Unlock()
+
+	user := *session.GetUser(c)
+	if user.ID == 0 {
+		return errors.ErrNotAuthenticated
+	}
+
+	botUID := c.Param("botID")
+
+	bot, err := s.botRepository.Find(botUID, user.ID)
+
+	if bot.UserID != user.ID || err != nil {
+		return errors.ErrRecordNotFound
+	}
+
+	if err := s.botRepository.Delete(bot); err != nil {
+		return errors.ErrRecordNotFound
+	}
+
+	user.BotsCount--
+	s.userService.UpdateUser(user)
+
+	return nil
+}
+
 // CheckActualUser ...
-func (s *BotService) CheckActualUser(userID string, user model.User) error {
+func (s *BotService) checkActualUser(user model.User) error {
 
 	userDate, _ := time.Parse("2006-01-02", user.Date)
 	nowDate := time.Now()
@@ -91,74 +122,30 @@ func (s *BotService) CheckActualUser(userID string, user model.User) error {
 	return nil
 }
 
-// InGame ....
-func (s *BotService) InGame(bot *model.Bot) (*model.Bot, error) {
+// // InGame ....
+// func (s *BotService) InGame(bot *models.Bot) (*models.Bot, error) {
 
-	p, err := s.proxyService.Free()
+// 	p, err := s.proxyService.Free()
 
-	if err != nil {
-		return bot, err
-	}
+// 	if err != nil {
+// 		return bot, err
+// 	}
 
-	botGame := models.NewBotWhitProxy(bot.LoginParams.FrameURL, p.URL)
-	g := ws.NewSocket(botGame)
-	g.Go()
+// 	botGame := models.NewBotWhitProxy(bot.LoginParams.FrameURL, p.URL)
+// 	g := ws.NewSocket(botGame)
+// 	g.Go()
 
-	fmt.Println("Get post update bot:", botGame)
-	bot.Result = botGame.Result
+// 	fmt.Println("Get post update bot:", botGame)
+// 	bot.Result = botGame.Result
+// 	bot.Balance = int(botGame.Balance)
+// 	bot.Name = botGame.Name
+// 	bot.Photo = botGame.Avatar
 
-	if botGame.IsError {
-		fmt.Println(botGame.Error)
-		return bot, err
-	}
+// 	if botGame.IsError {
+// 		fmt.Println(botGame.Error)
+// 		return bot, err
+// 	}
 
-	s.UpdateBot(*bot)
-	return bot, nil
-}
-
-// All ...
-func (s *BotService) All(c *gin.Context) ([]*model.Bot, error) {
-
-	userID, user, err := until.GetUserFromContext(c)
-	if err != nil {
-		return nil, err
-	}
-
-	userDate, _ := time.Parse("2006-01-02", user.Date)
-	nowDate := time.Now()
-
-	if userDate.Unix() < nowDate.Unix() {
-		return nil, errors.ErrNeedTime
-	}
-
-	return s.botRepository.All(userID)
-}
-
-// Delete ...
-func (s *BotService) Delete(c *gin.Context) error {
-
-	userID, _, err := until.GetUserFromContext(c)
-	if err != nil {
-		return err
-	}
-
-	botIDStr := c.Param("botID")
-
-	botID, err := strconv.Atoi(botIDStr)
-	if err != nil {
-		return errors.ErrInvalidParam
-	}
-
-	bot, err := s.Find(botID)
-
-	if bot.UserID != userID {
-		return errors.ErrInvalidParam
-	}
-
-	return s.botRepository.Delete(bot)
-}
-
-// Find ...
-func (s *BotService) Find(botID int) (model.Bot, error) {
-	return s.botRepository.Find(botID)
-}
+// 	s.UpdateBot(*bot)
+// 	return bot, nil
+// }

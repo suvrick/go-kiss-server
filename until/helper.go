@@ -1,11 +1,11 @@
 package until
 
 import (
-	"strconv"
+	"crypto/md5"
+	"encoding/hex"
+	"time"
 
 	"github.com/gin-gonic/gin"
-	"github.com/suvrick/go-kiss-server/errors"
-	"github.com/suvrick/go-kiss-server/model"
 )
 
 // Response ...
@@ -32,14 +32,7 @@ func WriteResponse(c *gin.Context, code int, data gin.H, err error) {
 	c.Abort()
 }
 
-// GetUserFromContext ...
-func GetUserFromContext(c *gin.Context) (string, model.User, error) {
-
-	u, ok := c.Get("user")
-	if !ok {
-		return "", model.User{}, errors.ErrNotAuthenticated
-	}
-
-	user := u.(model.User)
-	return strconv.Itoa(user.ID), user, nil
+func GetMD5Hash(login, password string) string {
+	hash := md5.Sum([]byte(login + password + time.Now().String()))
+	return hex.EncodeToString(hash[:])
 }

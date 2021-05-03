@@ -1,13 +1,14 @@
 package server
 
 import (
-	"net/http"
+	"log"
 
 	"github.com/suvrick/go-kiss-server/controllers"
-	"github.com/suvrick/go-kiss-server/middlewares"
+	"github.com/suvrick/go-kiss-server/game/models"
 	"github.com/suvrick/go-kiss-server/model"
 	"github.com/suvrick/go-kiss-server/repositories"
 	"github.com/suvrick/go-kiss-server/services"
+	"github.com/suvrick/go-kiss-server/session"
 
 	"github.com/gin-gonic/gin"
 	"gorm.io/driver/postgres"
@@ -23,13 +24,14 @@ func Start(config *Config) error {
 	}
 
 	router := gin.Default()
-	router.Use(middlewares.CORSMiddleware())
 
 	userRepo := repositories.NewUserRepository(db)
 	proxyRepo := repositories.NewProxyRepository(db)
 	botRepo := repositories.NewBotRepository(db)
 	kissRepo := repositories.NewAutoKissRepository(db)
 	stateRepo := repositories.NewStateDowloadRepository(db)
+
+	session.SetDb(userRepo)
 
 	//middlewares.NewAuthMiddleWare(sg, userRepo)
 	userService := services.NewUserService(userRepo)
@@ -39,15 +41,19 @@ func Start(config *Config) error {
 	stateDownloadService := services.NewStateDownloadService(stateRepo)
 
 	controllers.NewAutoKissController(router, kissService, stateDownloadService)
-
 	controllers.NewUserController(router, userService)
 	controllers.NewBotController(router, botService, userService)
 	controllers.NewProxyController(router, proxyService)
 
 	controllers.NewAdminController(router, userService, kissService, stateDownloadService)
 
+	router.Static("/bootstrap", "www/bootstrap")
+
+	router.Static("/js", "www/js")
+	router.Static("/css", "www/css")
+
 	router.GET("", func(c *gin.Context) {
-		c.File("www/autokiss/index.html")
+		c.File("www/index.html")
 	})
 
 	router.GET("/login", func(c *gin.Context) {
@@ -62,17 +68,27 @@ func Start(config *Config) error {
 		c.File("www/admin.html")
 	})
 
-	return http.ListenAndServeTLS(":443", "../certs/cert.crt", "../certs/pk.key", router)
-	//return router.Run(config.BindAddr)
+	router.GET("/proxy", func(c *gin.Context) {
+		c.File("www/proxy.html")
+	})
+
+	//return http.ListenAndServeTLS(":443", "../certs/cert.crt", "../certs/pk.key", router)
+	return router.Run(config.BindAddr)
 }
 
 func createDB(dbURL string) (*gorm.DB, error) {
 
 	db, err := gorm.Open(postgres.Open(dbURL), &gorm.Config{})
 
+	if !db.Migrator().HasTable("bots") {
+		if err := db.Migrator().CreateTable(&models.Bot{}); err != nil {
+			log.Fatalln(err.Error())
+		}
+	}
+
 	// Migrate the schema
 	db.AutoMigrate(&model.User{})
-	db.AutoMigrate(&model.Bot{})
+	db.AutoMigrate(&models.Bot{})
 	db.AutoMigrate(&model.Proxy{})
 	db.AutoMigrate(&model.KissUser{})
 	db.AutoMigrate(&model.KissState{})

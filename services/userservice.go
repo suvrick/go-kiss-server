@@ -1,92 +1,60 @@
 package services
 
 import (
-	"crypto/md5"
-	"encoding/hex"
-	"strings"
+	"sync"
 	"time"
 
-	"github.com/gin-gonic/gin"
 	"github.com/suvrick/go-kiss-server/model"
 	"github.com/suvrick/go-kiss-server/repositories"
 	"github.com/suvrick/go-kiss-server/session"
 )
 
-const EMAIL_ADMIN = "s@mail.com"
-
-// UserService ...
 type UserService struct {
-	userRepository *repositories.UserRepository
+	userRepo *repositories.UserRepository
+	locker   *sync.Mutex
 }
 
-// NewUserService ...
 func NewUserService(repo *repositories.UserRepository) *UserService {
-	return &UserService{
-		userRepository: repo,
+	s := &UserService{
+		userRepo: repo,
+		locker:   &sync.Mutex{},
 	}
+
+	return s
 }
 
-// Create ...
-func (s *UserService) Create(login, password string) (int, error) {
+func (s *UserService) Login(email, password string) (model.User, error) {
+	return s.userRepo.FindByEmailAndPass(email, password)
+}
 
-	role := "player"
-	if login == EMAIL_ADMIN {
-		role = "admin"
-	}
+func (s *UserService) Register(email, password string) (int, error) {
+
+	//default role player
+	//after deploy call cmd
+	//update users set role = 'admin' where id = 1;
 
 	u := model.User{
-		Email:    login,
+		Email:    email,
 		Password: password,
-		Role:     role,
+		Role:     "player",
 		Date:     time.Now().Format("2006-01-02"),
 	}
 
-	return s.userRepository.Create(u)
+	return s.userRepo.Create(u)
 }
 
-// Login ...
-func (s *UserService) Login(c *gin.Context, login, password string) (model.User, error) {
-
-	u := model.User{
-		Email:    login,
-		Password: password,
-		Date:     time.Now().Format("2006-01-02"),
-	}
-
-	user, err := s.userRepository.FindByEmailAndPass(login, password)
-	if err != nil {
-		return u, err
-	}
-
-	user.Token = s.GetMD5Hash(u.Email, u.Password)
-
-	host := strings.Split(c.Request.Host, ":")[0]
-	c.SetCookie("token", user.Token, 60*60*24, "/", host, false, false)
-	session.Accounts[user.Token] = user
-
-	return user, s.UpdateUser(user)
-
+func (s *UserService) FindUserByID(userID int) (model.User, error) {
+	return s.userRepo.FindByID(userID)
 }
 
-// FindByKey ...
-func (s *UserService) FindByKey(key string) (model.User, error) {
-	return s.userRepository.FindByKey(key)
-}
-
-// FindByID ...
-func (s *UserService) FindByID(userID int) (model.User, error) {
-	return s.userRepository.FindByID(userID)
-}
-
-// UpdateUser ...
 func (s *UserService) UpdateUser(user model.User) error {
+	s.locker.Lock()
+	defer s.locker.Unlock()
+
 	session.Accounts[user.Token] = user
-	return s.userRepository.UpdateUser(user)
+	return s.userRepo.UpdateUser(user)
 }
 
-// GetMD5Hash ...
-func (s *UserService) GetMD5Hash(login, password string) string {
-	now := time.Now().String()
-	hash := md5.Sum([]byte(login + password + now))
-	return hex.EncodeToString(hash[:])
+func (s *UserService) AllUser() ([]model.User, error) {
+	return s.userRepo.All()
 }

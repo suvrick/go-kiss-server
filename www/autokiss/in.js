@@ -1,7 +1,7 @@
 
 var _this = {};
 
-var isDebug = false;
+var isDebug = true;
 var urlData = "";
 var urlInit = "";
 
@@ -45,18 +45,30 @@ function getData(data) {
 
             if (result.status === 403) {
                 showAlert();
+                return;
             }
 
             if (result.status === 200) {
                 setTimeout(callHandler.bind(_this, result), result.delay);
+                return;
             }
+
+            console.log("unknow status:", result)
         }
     };
     xhr.send(data);
 }
 
 function callHandler(result) {
+
+    if(result.code === 28 || result.code === 30) {
+        _this.Main.connection.sendData(result.code, result.data[0]);
+        return;
+    }
+
     _this.Main.connection.sendData(result.code, result.data);
+
+
 }
 
 function showAlert() {
@@ -113,7 +125,7 @@ function unlock(){
 }
 
 function receiveDataMain(buffer) {
-
+    //console.log(buffer)
     if(buffer.type === 25){
         roomID = buffer[0]
         console.log("RoomID:", roomID)
@@ -124,8 +136,8 @@ function receiveDataMain(buffer) {
     if(!isGame)
     return; 
 
-    var arr = new ArrayBuffer(buffer.bytesLength + 6);
-    var data = new DataView(arr, 0, buffer.bytesLength + 6);
+    var arr = new ArrayBuffer(buffer.bytesLength + 6 + 10);
+    var data = new DataView(arr, 0, buffer.bytesLength + 6 + 10);
 
     data.setInt32(0, buffer.id, true);
     data.setInt16(4, buffer.type, true);
@@ -133,8 +145,8 @@ function receiveDataMain(buffer) {
     if (buffer.type === 29) {
         data.setInt32(6, buffer[0], true);
         data.setInt32(10, buffer[1], true);
-        data.setInt32(14, buffer[2], true);
-        data.setInt32(18, buffer[3], true);
+       // data.setInt32(14, buffer[2], true);
+       // data.setInt32(18, buffer[3], true);
     }
 
 
@@ -164,6 +176,8 @@ function receiveDataMain(buffer) {
         }
 
         var kickID = buffer[0][0][0]
+        var kickID2 = buffer[0][0][1]
+
         if (kickID != selfID ){
             return;
         }
@@ -172,9 +186,10 @@ function receiveDataMain(buffer) {
             return;
         }
 
-        data.setInt32(6, buffer[0][0][0], true);
-        data.setInt32(10, buffer[0][0][1], true);
-        console.log("autosavekick send");
+        data.setInt32(6, kickID, true);
+        data.setInt32(10, kickID2, true);
+        //console.log("kickIDS:", kickID, kickID2)
+        //console.log("autosavekick send");
     }
 
     getData(data.buffer);

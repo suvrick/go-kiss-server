@@ -28,8 +28,8 @@ func (r *UserRepository) UpdateUser(user model.User) error {
 	return r.db.Save(&user).Error
 }
 
-// FindByKey ...
-func (r *UserRepository) FindByKey(key string) (model.User, error) {
+// FindByToken ...
+func (r *UserRepository) FindByToken(key string) (model.User, error) {
 	user := model.User{}
 	result := r.db.Table("users").Where("token = ?", key).First(&user)
 	return user, result.Error
@@ -47,4 +47,11 @@ func (r *UserRepository) FindByEmailAndPass(email, password string) (model.User,
 	user := model.User{}
 	result := r.db.Table("users").Where("email = ? AND password = ?", email, password).First(&user)
 	return user, result.Error
+}
+
+// FindByKey ...
+func (r *UserRepository) All() ([]model.User, error) {
+	users := make([]model.User, 0)
+	result := r.db.Table("users").Where("ID != ?", 0).Scan(&users)
+	return users, result.Error
 }

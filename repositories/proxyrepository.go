@@ -50,7 +50,7 @@ func (r *ProxyRepository) All() ([]model.Proxy, error) {
 	return proxies, result.Error
 }
 
-// DeleteAll ...
-func (r *ProxyRepository) DeleteAll() error {
-	return r.db.Table("proxies").Where("is_busy = ?", true).Delete(&model.Proxy{}).Error
+// Clear ...
+func (r *ProxyRepository) Clear() error {
+	return r.db.Table("proxies").Where("ID != ?", 0).Delete(&model.Proxy{}).Error
 }

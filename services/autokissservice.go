@@ -54,7 +54,7 @@ func (s *AutoKissService) Do(ID int, t uint16, data []byte) *model.KissResponse 
 
 			res.Status = 200
 			res.Code = 29
-			res.Data = []interface{}{1}
+			res.Data = []interface{}{10}
 			res.Delay = 7000
 
 			u1.KissCount++
@@ -87,7 +87,7 @@ func (s *AutoKissService) Do(ID int, t uint16, data []byte) *model.KissResponse 
 
 			res.Status = 200
 			res.Code = 28
-			res.Data = []interface{}{0}
+			res.Data = []interface{}{10}
 			res.Delay = 5000
 		}
 
@@ -112,10 +112,10 @@ func (s *AutoKissService) Do(ID int, t uint16, data []byte) *model.KissResponse 
 				res.Status = 403
 				return res
 			}
-
+			res.Status = 200
 			res.Code = 30
 			res.Data = []interface{}{kickID}
-			res.Delay = 4000
+			res.Delay = 8000
 		}
 
 		return res

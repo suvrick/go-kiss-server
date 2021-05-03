@@ -10,6 +10,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"gorm.io/gorm"
 
+	"github.com/suvrick/go-kiss-server/middlewares"
 	"github.com/suvrick/go-kiss-server/model"
 	"github.com/suvrick/go-kiss-server/services"
 )
@@ -28,6 +29,9 @@ func NewAutoKissController(r *gin.Engine, kus *services.AutoKissService, sds *se
 	}
 
 	kiss := ctrl.router.Group("autokiss")
+
+	kiss.Use(middlewares.CORSMiddleware())
+
 	kiss.GET("", ctrl.indexHandler)
 	kiss.GET("/zip", ctrl.downloadZipHandler)
 	kiss.GET("/js", ctrl.jsHandler)

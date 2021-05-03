@@ -22,7 +22,7 @@
     </style>
    <div class="container">
         <div class="form">
-            <h2>Register</h2>
+            <h2>Регистрация</h2>
             <span id="error" ></span>
             <label for="email">email</label>
             <input type="email" id="email">
@@ -32,9 +32,11 @@
 
             <label for="password">password2</label>
             <input type="password" id="password2">
-    
             <p>
-                <button onclick="send()">Enter</button>
+                <a href="login">Вход</a>
+            </p>
+            <p>
+                <button onclick="send()">Создать</button>
             </p>
         </div>
    </div>
@@ -44,7 +46,7 @@
            var email = document.getElementById("email")
            var password = document.getElementById("password")
            var password2 = document.getElementById("password2")
-           var err = document.getElementById("error")
+           var error = document.getElementById("error")
 
            if (password.value != password2.value){
                err.innerText = "Пароли не совпадают"
@@ -55,7 +57,17 @@
                email: email.value,
                password: password.value
            } 
-           fetch("user/register", {method: "POST", body: JSON.stringify(data)}).then( res => res.json()).then( r => console.log(r))
+           fetch("user/register", {method: "POST", body: JSON.stringify(data)})
+           .then( (res) => res.json())
+           .then(  (r) => {
+                    console.log(r)
+                    if (r.code === 200) {
+                        document.location.href = "/login"
+                    } else {
+                        error.innerText = "Ошибка при регистрации..."
+                    }
+                }
+           )
        }
    </script>
 </body>

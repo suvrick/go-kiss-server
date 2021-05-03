@@ -1,0 +1,431 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <link rel="preconnect" href="https://fonts.gstatic.com">
+    <link href="https://fonts.googleapis.com/css2?family=Open+Sans&family=Oswald&family=PT+Sans+Narrow&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="./bootstrap/css/bootstrap.min.css">
+    <script src="./bootstrap/js/popper.min.js"></script>
+    <script src="./bootstrap/js/bootstrap.min.js"></script>
+    <link rel="stylesheet" href="css/style.css">
+    <title>Botovod</title>
+</head>
+
+<body>
+    <div id="app">
+        <div class="container">
+            <div class="row">
+                <header class="p-3 mb-3 border-bottom">
+                    <div class="container">
+                      <div  id="appTabBtns" class="d-flex flex-wrap align-items-center justify-content-center justify-content-lg-start">
+                        <a href="/" class="d-flex align-items-center mb-2 mb-lg-0 text-dark text-decoration-none">
+                          <img src="./css/logov2.png" class="bi me-2" width="60" height="40">
+                        </a>
+                  
+                        <ul class="nav col-12 col-lg-auto me-lg-auto mb-2 justify-content-center mb-md-0">
+                          <li><a class="visually-hidden" id="tabLoginBtn" data-bs-toggle="pill" data-bs-target="#tabLoginContent" type="button" role="tab">Логин</a></li>
+                          <li><a class="visually-hidden" id="tabRegisterBtn" data-bs-toggle="pill" data-bs-target="#tabRegisterContent" type="button" role="tab">Регистрация</a></li>
+                          <li><a class="visually-hidden" id="tabProfileBtn" v-if="self" data-bs-toggle="pill" data-bs-target="#tabProfileContent" type="button" role="tab">Профиль</a></li>
+                          <li><a class="nav-link px-2 link-dark" id="tabHomeBtn" v-if="self" data-bs-toggle="pill" data-bs-target="#tabHomeContent" type="button" role="tab">Главная</a></li>
+                          
+                          <!-- <li v-if="self?.Role === 'admin'" ><a class="nav-link px-2 link-dark" id="tabProxiesBtn" data-bs-toggle="pill" v-if="self?.role === 'admin'" data-bs-target="#tabProxiesContent" type="button" role="tab">Прокси</a></li> -->
+                          <li><a class="nav-link px-2 link-dark" id="tabUsersBtn" data-bs-toggle="pill" v-if="self?.role === 'admin'" data-bs-target="#tabUsersContent" type="button" role="tab">Аккаунты</a></li>
+                          <!-- <li><a @click="showAlert('Hi')" class="nav-link px-2 link-dark">Toast</a></li> -->
+                        </ul>
+                  
+                  
+                        <div v-if="self" class="dropdown text-end">
+                          <a href="#" class="d-block link-dark text-decoration-none dropdown-toggle" id="dropdownUser1" data-bs-toggle="dropdown" aria-expanded="false">
+                            {{ self.email }}
+                          </a>
+
+                          <!-- Example split danger button -->
+                          
+                          <ul class="dropdown-menu text-small" aria-labelledby="dropdownUser1">
+                            <li><a @click="navTab('tabProfileBtn')" class="dropdown-item" >Profile</a></li>
+                            <li><a @click="logout()" class="dropdown-item" href="#">Выйти</a></li>
+                          </ul>
+                        </div>
+                      </div>
+                    </div>
+                </header>
+            </div>
+
+            <div class="row"> 
+              <div class="tab-content" id="appTabContent">
+
+                <!-- BOTS -->
+                <div class="tab-pane fade show active" id="tabHomeContent" role="tabpanel" >
+                  <h2 class="pageTitle">
+                    Боты
+                </h2>
+                <!-- <p class="form-text pb-3">
+                  Поскольку этот механизм является общим для идентификации элементов во Vue, имеются и другие варианты применения key , не связанные явно с v-fo
+                </p> -->
+                <div class="cards">
+                  <img class="imgState" src="https://img.icons8.com/clouds/96/000000/bullish.png"/>
+
+                  <div v-if="self" class="state-card">
+                    <div class="card-body">
+                      <p class="sub-text">limit</p>
+                      <h5 class="card-title">{{ self.limit }}</h5>
+                     
+                    </div>
+                  </div>
+
+                  <div class="state-card">
+                    <div class="card-body">
+                      <p class="sub-text">bots</p>
+                      <h5 class="card-title">{{ bots.length }}</h5>
+                      
+                    </div>
+                  </div>
+
+                  <div class="state-card">
+                    <div class="card-body">
+                      <p class="sub-text">error</p>
+                      <h5 class="card-title">{{  bots.filter( b => b.ErrorMsg != "" ).length }}</h5>
+                      
+                    </div>
+                  </div>
+
+                  <div class="state-card">
+                    <div class="card-body">
+                      <p class="sub-text">balance</p>
+                      <h5 class="card-title">{{  bots.reduce( (a, b) =>  a + b.Balance, 0) }}</h5>
+                    </div>
+                  </div>
+                </div>
+               
+
+                <div class="searchContainer" >
+                  <form  v-if="self" class="col-12 col-lg-auto">
+                    <input type="search" class="form-control" placeholder="Search...">
+                  </form>
+                </div>
+
+                <table class="table caption-top">
+
+                  <div class="btnsTable">
+                    <div class="btn-group" role="group">
+                      <button @click="loadFromFile()" type="button" class="btn btn-light">
+                        <img src="./css/folder.svg"/>
+                      </button>
+                      <button type="button" class="btn btn-light">
+                        <img src="./css/reload.svg"/>
+                      </button>
+                      <button type="button" class="btn btn-light">
+                        <img src="./css/tasks.svg"/>
+                      </button>
+                      <button type="button" class="btn btn-light">
+                        <img src="./css/trash.svg"/>
+                      </button>
+                    </div>
+                  </div>
+         
+                  <thead>
+                    <tr>
+                      <th scope="col">#</th>
+                      <th scope="col">Ник</th>
+                      <th scope="col">Статус</th>
+                      <th scope="col">Баланс</th>
+                      <th scope="col">Бонус день</th>
+                      <th scope="col">Дата</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+
+                    <tr v-for="(bot, i) in botsContainer" :key="bot.ID" >
+                      <th scope="row">{{ (botsContainerStep * 5) + i + 1 }}</th>
+                      <td class="w-50">{{ bot.Name === "" ? "asdadads" : bot.Name }}</td>
+                      <td>{{ bot.Result === "" ? "need update" : bot.Result }}</td>
+                      <td>{{ bot.Balance }}</td>
+                      <td>{{ 0 }}</td>
+                      <td>{{ bot.LastUseDay === "" ? new Date().toLocaleDateString() : bot.LastUseDay }}</td>
+                    </tr>
+                   
+                  </tbody>
+                </table>
+                <div v-if="botsContainer.length === 0" class="w-100">
+                  <p class="form-text empty-table">
+                    Нет данных
+                  </p>
+                </div>
+                <div class="d-flex justify-content-center">
+                  <div class="btn-group" role="group">
+                    <button @click="updateBotsContainerStep(-1)" type="button" class="btn color-white btn-info"><</button>
+                    <button @click="updateBotsContainerStep(1)" type="button" class="btn color-white btn-info">></button>
+                  </div>
+                </div>
+                </div>
+
+                <!-- ПРОФИЛЬ  -->
+                <div class="tab-pane fade" id="tabProfileContent" role="tabpanel" >
+                  <h2>
+                      Профиль
+                  </h2>
+                  <pre>
+                    {{ self }}
+                  </pre>
+                </div>
+
+                <!-- PROXIES -->    
+                <!-- <div class="tab-pane fade show active"  id="tabProxiesContent" role="tabpanel" >
+                  <h2 class="pageTitle">
+                    Прокси
+                  </h2>
+
+                  <div class="cards">
+                    <img class="imgState" src="https://img.icons8.com/clouds/96/000000/vertical-settings-mixer.png"/>
+
+                    <div class="state-card">
+                      <div class="card-body">
+                        <p class="sub-text">proxies</p>
+                        <h5 class="card-title">{{ proxies.length }}</h5>
+                        
+                      </div>
+                    </div>
+
+                    <div class="state-card">
+                      <div class="card-body">
+                        <p class="sub-text">is_bad</p>
+                        <h5 class="card-title">{{  proxies.filter( b => b.IsBad === true ).length }}</h5>
+                        
+                      </div>
+                    </div>
+
+                    <div class="state-card">
+                      <div class="card-body">
+                        <p class="sub-text">is_busy</p>
+                        <h5 class="card-title">{{  proxies.filter( b => b.IsBusy === true ).length }}</h5>
+                      </div>
+                    </div>
+                  </div>
+                  
+
+                  <div class="searchContainer" >
+                    <form  v-if="self" class="col-12 col-lg-auto">
+                      <input type="search" class="form-control" placeholder="Search...">
+                    </form>
+                  </div>
+
+                  <table class="table caption-top">
+
+                    <div class="btnsTable">
+                      <div class="btn-group" role="group">
+                        <button @click="loadFromFile()" type="button" class="btn btn-light">
+                          <img src="./css/folder.svg"/>
+                        </button>
+                        <button type="button" class="btn btn-light">
+                          <img src="./css/reload.svg"/>
+                        </button>
+                        <button type="button" class="btn btn-light">
+                          <img src="./css/trash.svg"/>
+                        </button>
+                      </div>
+                    </div>
+            
+                    <thead>
+                      <tr>
+                        <th scope="col">#</th>
+                        <th scope="col">Host</th>
+                        <th scope="col">IsBusy</th>
+                        <th scope="col">IsBad</th>
+                        <th scope="col">DateAdd</th>
+                        <th scope="col">DateLastUse</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+
+                      <tr v-for="(p, i) in proxiesContainer" :key="p.ID" >
+                        <th scope="row">{{ (proxiesContainerStep * 5) + i + 1}}</th>
+                        <td class="w-50">{{ p.Host === "" ? "null" : p.Host }}</td>
+                        <td>{{ p.IsBusy }}</td>
+                        <td>{{ p.IsBad }}</td>
+                        <td>{{ p.DateAdd }}</td>
+                        <td>{{ p.DateLastUse === "" ? new Date().toLocaleDateString() : p.DateLastUse }}</td>
+                      </tr>
+                      
+                    </tbody>
+                  </table>
+                  <div v-if="proxiesContainer.length === 0" class="w-100">
+                    <p class="form-text empty-table">
+                      Нет данных
+                    </p>
+                  </div>
+                  <div class="d-flex justify-content-center">
+                    <div class="btn-group" role="group">
+                      <button @click="updateProxiesContainerStep(-1)" type="button" class="btn color-white btn-info"><</button>
+                      <button @click="updateProxiesContainerStep(1)" type="button" class="btn color-white btn-info">></button>
+                    </div>
+                  </div>
+                </div> -->
+
+                <!-- USERS -->
+                <div class="tab-pane fade" id="tabUsersContent" role="tabpanel" >
+                  <h2 class="pageTitle">
+                    Юзеры
+                  </h2>
+                  <!-- <p class="form-text pb-3">
+                    Поскольку этот механизм является общим для идентификации элементов во Vue, имеются и другие варианты применения key , не связанные явно с v-fo
+                  </p> -->
+                  <div class="cards">
+                    <img class="imgState" src="https://img.icons8.com/plasticine/96/000000/user-menu-male.png"/>
+
+                    <div class="state-card">
+                      <div class="card-body">
+                        <p class="sub-text">users</p>
+                        <h5 class="card-title">{{ users.length }}</h5>
+                        
+                      </div>
+                    </div>
+
+                    <div class="state-card">
+                      <div class="card-body">
+                        <p class="sub-text">is_bad</p>
+                        <h5 class="card-title">{{  0 }}</h5>
+                        
+                      </div>
+                    </div>
+
+                    <div class="state-card">
+                      <div class="card-body">
+                        <p class="sub-text">is_busy</p>
+                        <h5 class="card-title">{{  0 }}</h5>
+                      </div>
+                    </div>
+                  </div>
+                 
+
+                  <div class="searchContainer" >
+                    <form  v-if="self" class="col-12 col-lg-auto">
+                      <input type="search" class="form-control" placeholder="Search...">
+                    </form>
+                  </div>
+
+                  <table class="table caption-top">
+
+                    <div class="btnsTable">
+                      <div class="btn-group" role="group">
+                        <button @click="loadFromFile()" type="button" class="btn btn-light">
+                          <img src="./css/folder.svg"/>
+                        </button>
+                        <button type="button" class="btn btn-light">
+                          <img src="./css/reload.svg"/>
+                        </button>
+                        <button type="button" class="btn btn-light">
+                          <img src="./css/trash.svg"/>
+                        </button>
+                      </div>
+                    </div>
+           
+                    <thead>
+                      <tr>
+                        <th scope="col">#</th>
+                        <th scope="col">Email</th>
+                        <th scope="col">ID</th>
+                        <th scope="col">Limit</th>
+                        <th scope="col">Bots</th>
+                        <th scope="col">Role</th>
+                        <th scope="col">Time</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+
+                      <tr v-for="(u, i) in usersContainer" :key="u.id" >
+                        <th scope="row">{{ (usersContainerStep * 5) + i + 1}}</th>
+                        <td class="w-50">{{ u.email === "" ? "null" : u.email }}</td>
+                        <td>{{ u.id }}</td>
+                        <td>{{ u.limit }}</td>
+                        <td>{{ u.bots }}</td>
+                        <td>{{ u.role }}</td>
+                        <td>{{ u.time === "" ? new Date().toLocaleDateString() : u.time }}</td>
+                      </tr>
+                     
+                    </tbody>
+                  </table>
+                  <div v-if="usersContainer.length === 0" class="w-100">
+                    <p class="form-text empty-table">
+                      Нет данных
+                    </p>
+                  </div>
+                  <div class="d-flex justify-content-center">
+                    <div class="btn-group" role="group">
+                      <button @click="updateUsersContainerStep(-1)" type="button" class="btn color-white btn-info"><</button>
+                      <button @click="updateUsersContainerStep(1)" type="button" class="btn color-white btn-info">></button>
+                    </div>
+                  </div>
+                </div>
+                <!-- ЛОГИН  -->
+                <div class="tab-pane fade just mw-300 ma" id="tabLoginContent" role="tabpanel" >
+                  <div>
+                      <h3>Логин</h3>
+
+                      <div class="mb-3">
+                        <label for="email" class="form-label">Email address</label>
+                        <input type="email" class="form-control" id="email" v-model="email" aria-describedby="emailHelp">
+                        <div  v-if="msgAuthError" class="form-text">{{ msgAuthError }}</div>
+                      </div>
+                      <div class="mb-3">
+                        <label for="password" class="form-label">Password</label>
+                        <input type="password" v-model="password" class="form-control" id="password">
+                      </div>
+                      <button @click="onLogin()" class="btn btn-primary form-control">Войти</button>
+                      <div class="mt-3">
+                          <label class="form-check-label" >Нет аккаунта?</label>
+                          <a @click="navTab('tabRegisterBtn')" class="link">Регистрация</a>
+                      </div>
+                    </div>
+                </div>
+                <!-- РЕГИСТРАЦИЯ  -->
+                <div class="tab-pane fade  mw-300 ma" id="tabRegisterContent" role="tabpanel" >
+                  <div>
+                      <h3>Регистрация</h3>
+
+                      <div class="mb-3">
+                        <label for="emailReg" class="form-label">Email address</label>
+                        <input type="email" class="form-control" id="emailReg" v-model="emailReg" aria-describedby="emailHelp">
+                        <div  v-if="msgRegError" class="form-text">{{ msgRegError }}</div>
+                      </div>
+                      <div class="mb-3">
+                        <label for="passwordReg" class="form-label">Password</label>
+                        <input type="password" v-model="passwordReg" class="form-control" id="passwordReg">
+                      </div>
+                      <div class="mb-3">
+                        <label for="passwordReg2" class="form-label">Password yet</label>
+                        <input type="password" v-model="passwordReg2" class="form-control" id="passwordReg2">
+                      </div>
+                      <button @click="onRegister()" class="btn btn-primary form-control">Создать</button>
+                      <div class="mt-3">
+                          <label class="form-check-label" >Есть аккаунта?</label>
+                          <a @click="navTab('tabLoginBtn')" class="link">Войти</a>
+                      </div>
+                    </div>
+                </div>
+              </div>
+            </div>
+        </div>
+
+
+      <div class="toast-container position-absolute top-0 end-0 p-3">
+        <div id="toast" class="toast align-items-center text-white bg-primary border-0" role="alert" aria-live="assertive" aria-atomic="true">
+          <div class="d-flex">
+            <div class="toast-body">
+              {{ toastMsg }}
+            </div>
+            <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <script src="js/vue.js"></script>
+    <script src="js/app.js"></script>
+</body>
+
+</html>

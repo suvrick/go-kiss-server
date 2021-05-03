@@ -24,16 +24,16 @@ func NewProxyService(repo *repositories.ProxyRepository) *ProxyService {
 func (s *ProxyService) AddRange(urls []string) ([]model.Proxy, error) {
 
 	proxies := make([]model.Proxy, 0)
-	var err error
+
 	for _, v := range urls {
 		p := *model.NewProxy(v)
-		p.ID, err = s.proxyRepository.Create(p)
-		if err == nil {
+		p.ID, _ = s.proxyRepository.Create(p)
+		if p.ID != 0 {
 			proxies = append(proxies, p)
 		}
 	}
 
-	return proxies, err
+	return proxies, nil
 }
 
 // Free ...
@@ -57,7 +57,7 @@ func (s *ProxyService) All() ([]model.Proxy, error) {
 	return s.proxyRepository.All()
 }
 
-// DeleteAll ...
-func (s *ProxyService) DeleteAll() error {
-	return s.proxyRepository.DeleteAll()
+// Clear ...
+func (s *ProxyService) Clear() error {
+	return s.proxyRepository.Clear()
 }

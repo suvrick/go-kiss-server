@@ -11,31 +11,16 @@ import (
 func AuthMiddleware() gin.HandlerFunc {
 	return func(c *gin.Context) {
 
-		token, err := c.Cookie("token")
+		user := session.GetUser(c)
 
-		if err != nil {
-
-			until.WriteResponse(c, 403, gin.H{
+		if user == nil || user.ID == 0 {
+			until.WriteResponse(c, 401, gin.H{
 				"result": "fail",
 			}, errors.ErrNotAuthenticated)
 			c.Abort()
 			return
 		}
 
-		c.Set("token", token)
-
-		user, ok := session.Accounts[token]
-
-		if !ok {
-			until.WriteResponse(c, 403, gin.H{
-				"result": "fail",
-			}, errors.ErrNotAuthenticated)
-			c.Abort()
-			return
-		}
-
-		c.Set("user", user)
 		c.Next()
-
 	}
 }

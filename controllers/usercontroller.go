@@ -1,12 +1,14 @@
 package controllers
 
 import (
-	"fmt"
+	"strings"
 
 	"github.com/gin-gonic/gin"
 	"github.com/suvrick/go-kiss-server/errors"
 	"github.com/suvrick/go-kiss-server/middlewares"
+	"github.com/suvrick/go-kiss-server/model"
 	"github.com/suvrick/go-kiss-server/services"
+	"github.com/suvrick/go-kiss-server/session"
 	"github.com/suvrick/go-kiss-server/until"
 )
 
@@ -17,49 +19,54 @@ type UserController struct {
 }
 
 // NewUserController ...
-func NewUserController(r *gin.Engine, s *services.UserService) {
+func NewUserController(r *gin.Engine, u_service *services.UserService) {
 
 	ctrl := &UserController{
 		router:      r,
-		userService: s,
+		userService: u_service,
 	}
 
 	user := ctrl.router.Group("/user")
+	{
+		user.POST("/login", ctrl.loginHandler)
+		user.GET("/logout", ctrl.logoutHandler)
+		user.POST("/register", ctrl.registerHandler)
+	}
 
-	user.POST("/login", ctrl.loginHandler)
-	user.POST("/register", ctrl.registerHandler)
-
-	self := ctrl.router.Group("/self")
-	self.Use(middlewares.AuthMiddleware())
-	self.GET("/get", ctrl.getUserHandler)
+	self := ctrl.router.Group("/user", middlewares.AuthMiddleware())
+	{
+		self.GET("/get", ctrl.getUserHandler)
+	}
 
 }
 
 func (ctrl *UserController) registerHandler(c *gin.Context) {
-	type L struct {
-		Login    string `json:"email"`
+
+	type FormData struct {
+		Email    string `json:"email"`
 		Password string `json:"password"`
 	}
 
-	login := L{}
+	data := FormData{}
 
-	if err := c.ShouldBindJSON(&login); err != nil {
-		until.WriteResponse(c, 200, gin.H{
+	if err := c.ShouldBindJSON(&data); err != nil {
+		until.WriteResponse(c, 403, gin.H{
 			"result": "fail",
 		}, errors.ErrInvalidParam)
 		return
 	}
 
-	if len(login.Login) == 0 || len(login.Password) == 0 {
-		until.WriteResponse(c, 200, gin.H{
+	if len(data.Email) == 0 || len(data.Password) == 0 {
+		until.WriteResponse(c, 403, gin.H{
 			"result": "fail",
 		}, errors.ErrInvalidParam)
 		return
 	}
 
-	id, err := ctrl.userService.Create(login.Login, login.Password)
+	id, err := ctrl.userService.Register(data.Email, data.Password)
+
 	if err != nil {
-		until.WriteResponse(c, 200, gin.H{
+		until.WriteResponse(c, 403, gin.H{
 			"result": "fail",
 		}, errors.ErrIncorrectEmailOrPassword)
 		return
@@ -74,36 +81,38 @@ func (ctrl *UserController) registerHandler(c *gin.Context) {
 
 func (ctrl *UserController) loginHandler(c *gin.Context) {
 
-	type L struct {
-		Login    string `json:"email"`
+	type FormData struct {
+		Email    string `json:"email"`
 		Password string `json:"password"`
 	}
 
-	login := L{}
+	data := FormData{}
 
-	if err := c.ShouldBindJSON(&login); err != nil {
-		until.WriteResponse(c, 200, gin.H{
+	if err := c.ShouldBindJSON(&data); err != nil {
+		until.WriteResponse(c, 403, gin.H{
 			"result": "fail",
 		}, errors.ErrInvalidParam)
 		return
 	}
 
-	if len(login.Login) == 0 || len(login.Password) == 0 {
-		until.WriteResponse(c, 200, gin.H{
+	if len(data.Email) == 0 || len(data.Password) == 0 {
+		until.WriteResponse(c, 403, gin.H{
 			"result": "fail",
 		}, errors.ErrInvalidParam)
 		return
 	}
 
-	user, err := ctrl.userService.Login(c, login.Login, login.Password)
+	user, err := ctrl.userService.Login(data.Email, data.Password)
 
 	if err != nil {
 		until.WriteResponse(c, 403, gin.H{
-			"result": "ok",
+			"result": "fail",
 			"user":   user,
 		}, errors.ErrIncorrectEmailOrPassword)
 		return
 	}
+
+	user = ctrl.SetCookie(c, user)
 
 	until.WriteResponse(c, 200, gin.H{
 		"result": "ok",
@@ -111,11 +120,44 @@ func (ctrl *UserController) loginHandler(c *gin.Context) {
 	}, nil)
 }
 
+func (ctrl *UserController) logoutHandler(c *gin.Context) {
+
+	user := session.GetUser(c)
+
+	if user.ID == 0 {
+		until.WriteResponse(c, 403, gin.H{
+			"result": "fail",
+		}, errors.ErrNotAuthenticated)
+	}
+
+	ctrl.DeleteCookie(c, *user)
+
+	until.WriteResponse(c, 401, nil, nil)
+}
+
 func (ctrl *UserController) getUserHandler(c *gin.Context) {
 
-	_, user, err := until.GetUserFromContext(c)
-	fmt.Println(user)
+	user := session.GetUser(c)
+
 	until.WriteResponse(c, 200, gin.H{
 		"user": user,
-	}, err)
+	}, nil)
+}
+
+func (ctrl *UserController) SetCookie(c *gin.Context, user model.User) model.User {
+
+	user.Token = until.GetMD5Hash(user.Email, user.Password)
+
+	host := strings.Split(c.Request.Host, ":")[0]
+	c.SetCookie("token", user.Token, 60*60*30*24, "/", host, false, false)
+
+	ctrl.userService.UpdateUser(user)
+
+	return user
+}
+
+func (ctrl *UserController) DeleteCookie(c *gin.Context, user model.User) {
+	host := strings.Split(c.Request.Host, ":")[0]
+	c.SetCookie("token", user.Token, -1, "/", host, false, false)
+	delete(session.Accounts, user.Token)
 }

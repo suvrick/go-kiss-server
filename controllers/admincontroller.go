@@ -5,6 +5,7 @@ import (
 	"time"
 
 	"github.com/gin-gonic/gin"
+	"github.com/suvrick/go-kiss-server/errors"
 	"github.com/suvrick/go-kiss-server/middlewares"
 	"github.com/suvrick/go-kiss-server/model"
 	"github.com/suvrick/go-kiss-server/services"
@@ -21,10 +22,10 @@ type AdminController struct {
 }
 
 // NewAdminController ...
-func NewAdminController(r *gin.Engine, us *services.UserService, kus *services.AutoKissService, sds *services.StateDownloadService) *AdminController {
+func NewAdminController(r *gin.Engine, u_service *services.UserService, kus *services.AutoKissService, sds *services.StateDownloadService) *AdminController {
 	ctrl := &AdminController{
 		router:               r,
-		userService:          us,
+		userService:          u_service,
 		kissUserService:      kus,
 		stateDownloadService: sds,
 	}
@@ -33,18 +34,29 @@ func NewAdminController(r *gin.Engine, us *services.UserService, kus *services.A
 
 	admin.Use(middlewares.AuthMiddleware()).Use(middlewares.AdminMiddleware())
 
-	admin.GET("/get/:id", ctrl.getUserHandler)
-	admin.GET("/setlimit/:id/:limit", ctrl.setLimitBotToUserHandler)
-	admin.GET("/setdate/:id/:mounth", ctrl.setDateBotToUserHandler)
+	botovod := admin.Group("/botovod")
+	{
+		botovod.GET("/all", ctrl.getAllUser)
+		botovod.GET("/get/:id", ctrl.getUserHandler)
+		botovod.GET("/setlimit/:id/:limit", ctrl.setLimitBotToUserHandler)
+		botovod.GET("/setdate/:id/:mounth", ctrl.setDateBotToUserHandler)
+	}
 
 	kiss := admin.Group("/kiss")
-	kiss.GET("/all", ctrl.allKissUserHandler)
-	kiss.GET("/auth/:userID", ctrl.authKissUserHandler)
-	kiss.GET("/get/:userID", ctrl.getKissUserHandler)
-	kiss.GET("/down", ctrl.allDownloadHandler)
-
+	{
+		kiss.GET("/all", ctrl.allKissUserHandler)
+		kiss.GET("/auth/:userID", ctrl.authKissUserHandler)
+		kiss.GET("/get/:userID", ctrl.getKissUserHandler)
+		kiss.GET("/down", ctrl.allDownloadHandler)
+	}
 	return ctrl
 }
+
+/*
+
+	KISS
+
+*/
 
 func (ctrl *AdminController) allDownloadHandler(c *gin.Context) {
 	states, _ := ctrl.stateDownloadService.AllDownloadState()
@@ -127,23 +139,29 @@ func (ctrl *AdminController) allKissUserHandler(c *gin.Context) {
 	})
 }
 
+/*
+
+	BOTOVOD
+
+*/
+
 func (ctrl *AdminController) setLimitBotToUserHandler(c *gin.Context) {
 	id := c.Param("id")
 	limitStr := c.Param("limit")
 
 	userID, err := strconv.Atoi(id)
 	if err != nil {
-		until.WriteResponse(c, 200, nil, err)
+		until.WriteResponse(c, 200, nil, errors.ErrInvalidParam)
 		return
 	}
 
 	limit, err := strconv.Atoi(limitStr)
 	if err != nil {
-		until.WriteResponse(c, 200, nil, err)
+		until.WriteResponse(c, 200, nil, errors.ErrInvalidParam)
 		return
 	}
 
-	user, err := ctrl.userService.FindByID(userID)
+	user, err := ctrl.userService.FindUserByID(userID)
 
 	if err != nil {
 		until.WriteResponse(c, 200, nil, err)
@@ -159,22 +177,23 @@ func (ctrl *AdminController) setLimitBotToUserHandler(c *gin.Context) {
 }
 
 func (ctrl *AdminController) setDateBotToUserHandler(c *gin.Context) {
+
 	id := c.Param("id")
 	monthStr := c.Param("mounth")
 
 	userID, err := strconv.Atoi(id)
 	if err != nil {
-		until.WriteResponse(c, 200, nil, err)
+		until.WriteResponse(c, 200, nil, errors.ErrInvalidParam)
 		return
 	}
 
 	mounth, err := strconv.Atoi(monthStr)
 	if err != nil {
-		until.WriteResponse(c, 200, nil, err)
+		until.WriteResponse(c, 200, nil, errors.ErrInvalidParam)
 		return
 	}
 
-	user, err := ctrl.userService.FindByID(userID)
+	user, err := ctrl.userService.FindUserByID(userID)
 
 	if err != nil {
 		until.WriteResponse(c, 200, nil, err)
@@ -183,6 +202,7 @@ func (ctrl *AdminController) setDateBotToUserHandler(c *gin.Context) {
 
 	newTime := time.Now().AddDate(0, mounth, 0)
 	user.Date = newTime.Format("2006-01-02")
+
 	ctrl.userService.UpdateUser(user)
 
 	until.WriteResponse(c, 200, gin.H{
@@ -191,12 +211,25 @@ func (ctrl *AdminController) setDateBotToUserHandler(c *gin.Context) {
 }
 
 func (ctrl *AdminController) getUserHandler(c *gin.Context) {
+
 	id := c.Param("id")
+	userID, err := strconv.Atoi(id)
+	if err != nil {
+		until.WriteResponse(c, 200, nil, errors.ErrInvalidParam)
+		return
+	}
 
-	userID, _ := strconv.Atoi(id)
+	user, err := ctrl.userService.FindUserByID(userID)
 
-	user, err := ctrl.userService.FindByID(userID)
 	until.WriteResponse(c, 200, gin.H{
 		"user": user,
+	}, err)
+}
+
+func (ctrl *AdminController) getAllUser(c *gin.Context) {
+	users, err := ctrl.userService.AllUser()
+	until.WriteResponse(c, 200, gin.H{
+		"count": len(users),
+		"users": users,
 	}, err)
 }

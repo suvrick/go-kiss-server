@@ -1,6 +1,6 @@
 module github.com/suvrick/go-kiss-server
 
-go 1.15
+go 1.16
 
 require (
 	github.com/BurntSushi/toml v0.3.1
@@ -15,7 +15,6 @@ require (
 	github.com/leodido/go-urn v1.2.1 // indirect
 	github.com/modern-go/concurrent v0.0.0-20180306012644-bacd9c7ef1dd // indirect
 	github.com/modern-go/reflect2 v1.0.1 // indirect
-	github.com/suvrick/go-kiss-core v0.0.0-20210308065254-b4a6af2d7274
 	github.com/ugorji/go v1.2.4 // indirect
 	golang.org/x/sys v0.0.0-20210305230114-8fe3ee5dd75b // indirect
 	google.golang.org/protobuf v1.25.0 // indirect

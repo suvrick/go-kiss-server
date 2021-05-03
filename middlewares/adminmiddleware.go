@@ -12,15 +12,10 @@ import (
 func AdminMiddleware() gin.HandlerFunc {
 	return func(c *gin.Context) {
 
-		u, ok := c.Get("user")
-		if !ok {
-			until.WriteResponse(c, 403, nil, errors.New("not forbidden"))
-			c.Abort()
-			return
-		}
-
+		u, _ := c.Get("user")
 		user := u.(model.User)
-		if user.Email != "s@mail.com" {
+
+		if user.Role != "admin" {
 			until.WriteResponse(c, 403, nil, errors.New("not forbidden"))
 			c.Abort()
 			return
