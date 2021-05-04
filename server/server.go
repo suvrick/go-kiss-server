@@ -2,6 +2,7 @@ package server
 
 import (
 	"log"
+	"net/http"
 
 	"github.com/suvrick/go-kiss-server/controllers"
 	"github.com/suvrick/go-kiss-server/game/models"
@@ -72,8 +73,8 @@ func Start(config *Config) error {
 		c.File("www/proxy.html")
 	})
 
-	//return http.ListenAndServeTLS(":443", "../certs/cert.crt", "../certs/pk.key", router)
-	return router.Run(config.BindAddr)
+	return http.ListenAndServeTLS(":443", "../certs/cert.crt", "../certs/pk.key", router)
+	//return router.Run(config.BindAddr)
 }
 
 func createDB(dbURL string) (*gorm.DB, error) {

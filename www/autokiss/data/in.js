@@ -1,12 +1,16 @@
 
-var _this = {};
 
-var isDebug = true;
-var urlData = "";
-var urlInit = "";
+/*
 
-var selfID = 0;
-var roomID = 0;
+
+        По всем техническим вопросам пишите в телеграмм @suvrick
+
+
+
+*/
+
+
+/************************************ UI ***************************/
 
 var isGame = false;
 var isMenuShow = false;
@@ -29,191 +33,97 @@ var unlockGuestBtn = {}
 
 var timerPopup = 0;
 
+/************************************END UI****************************/
 
+var _this = {};
+var selfID = 0;
+var tryTimeConnectToGame = 90; //счетчик попыток иницилизации
+var catchPacketID = [28, 29, 308]; // пакеты 
+var msgError = 'Уп-с. Критическая ошибка. Сообщите об этом мне в телеграм @suvrick';
 
+/*
 
+    Ядро
+    Тут и происходит все волшебство программы 
+    Перехват пакетов
+	
 
-function getData(data) {
+    Client 
+    BOTTLE_LEAVE(27);	
+    BOTTLE_ROLL(28); speed:I
+    BOTTLE_KISS(29); answer:B
+    BOTTLE_SAVE(30); target_id:I
+    BOTTLE_KICK(31); player_id:I
 
-    fetch(urlData + "/" + selfID, {
-        method: "POST",
-        body: data,
-        mode: 'no-cors',
-        headers: {
-            'Accept': 'application/json, text/plain, */*',
-            'Content-Type': 'application/json'
-          },
-    }).then(response => response.json())
-    .then(xhr => {
-        if (xhr.status === 200) {
-            var result = JSON.parse(xhr.responseText);
+    Server 
+    BOTTLE_LEADER(28); leader_id:I
+    BOTTLE_ROLL(29); leader:I, rolled_id:I, speed:I, time:I,
+    BOTTLE_KISS(30); player:I, answer:B
+    KICKS(308); [target_id:I, actor_id:I, kick_left:I]
+    KICK_SAVE(309); target_id:I, actor_id:I
 
-            if (result.status === 403) {
-                showAlert();
-                return;
-            }
-
-            if (result.status === 200) {
-                setTimeout(callHandler.bind(_this, result), result.delay);
-                return;
-            }
-
-            console.log("unknow status:", result)
-        }
-    })
-
-
-    // var xhr = new XMLHttpRequest();
-    // xhr.open("POST", urlData + "/" + selfID, true);
-    // xhr.setRequestHeader('Content-Type', 'application/octet-stream');
-    // xhr.setRequestHeader('Content-Type', 'application/json');
-    // xhr.setRequestHeader('Content-Type', '*');
-
-
-    // xhr.onload = function () {
-
-       
-    // };
-    // xhr.send(data);
-}
-
-function callHandler(result) {
-
-    if(result.code === 28 || result.code === 30) {
-        _this.Main.connection.sendData(result.code, result.data[0]);
-        return;
-    }
-
-    _this.Main.connection.sendData(result.code, result.data);
-
-
-}
-
-function showAlert() {
-
-    if (isShowAlert)
-        return;
-
-    var div = document.createElement("div")
-    div.style.position = "absolute";
-    div.style.bottom = "0"
-    div.style.width = "300px"
-    div.style.padding = "10px";
-    div.style.background = "white";
-
-    var p = document.createElement("span");
-    p.style.padding = " 0 10px 10px 10px";
-    p.style.display = "block";
-    p.innerText = "Программа не зарегистрирована.Тестовый пириод закончился.\nНапишите мне в телеграмм @help_auto_kiss для приобретения программы";
-
-    var head = document.createElement("span");
-    head.innerText = "Bottle Auto Kiss Helper";
-    head.style.display = "block";
-    head.style.fontWeight = "bold";
-    head.style.paddingLeft = "10px"
-
-    var btnClose = document.createElement("span");
-    btnClose.style.display = "block";
-    btnClose.style.position = "absolute";
-    btnClose.style.right = "10px";
-    btnClose.style.top = "10px";
-    btnClose.style.cursor = "pointer";
-    btnClose.innerText = "x";
-    btnClose.addEventListener("click", function () {
-        screenGame.removeChild(div)
-    })
-
-    div.appendChild(head);
-    div.appendChild(p);
-    div.appendChild(btnClose);
-
-    screenGame.appendChild(div)
-
-    isShowAlert = true;
-}
-
-function unlock(){
-    var s = document.getElementsByClassName("recaptcha-checkbox goog-inline-block recaptcha-checkbox-unchecked rc-anchor-checkbox")[0];
-    if(s === undefined || s === null) {
-        console.log("nullable object capcha")
-        return;
-    }
-
-    s.click();
-}
+*/
 
 function receiveDataMain(buffer) {
-    //console.log(buffer)
-    if(buffer.type === 25){
-        roomID = buffer[0]
-        console.log("RoomID:", roomID)
-        return;
+
+    if(!isGame){
+        return; 
     }
 
+    //console.log(">>>>>>>>", buffer)
 
-    if(!isGame)
-    return; 
+    switch(buffer.type) {
+        /* BOTTLE_LEADER */
+        case 28: 
 
-    var arr = new ArrayBuffer(buffer.bytesLength + 6 + 10);
-    var data = new DataView(arr, 0, buffer.bytesLength + 6 + 10);
+            var leader = buffer[0]
 
-    data.setInt32(0, buffer.id, true);
-    data.setInt16(4, buffer.type, true);
+            if (leader === selfID) {
+                setInterval(()=>{
+                    Main.connection.sendData(28, 0);
+                }, 5000);
+            }
 
-    if (buffer.type === 29) {
-        data.setInt32(6, buffer[0], true);
-        data.setInt32(10, buffer[1], true);
-       // data.setInt32(14, buffer[2], true);
-       // data.setInt32(18, buffer[3], true);
-    }
+        break;
+        /* BOTTLE_ROLL */
+        case 29: 
+            
+            var leader = buffer[0]
+            var rolled = buffer[1]
 
+            if (leader === selfID || rolled === selfID) {
+              
+                setInterval(()=>{
+                    Main.connection.sendData(29, 1);
+                }, 8000);
+            }
 
-    if(buffer.type === 27 ){
-        console.log(buffer[0],selfID , autoMoveToRoom)
-        if(buffer[0] === selfID && autoMoveToRoom) {
-            console.log("tru move to roomID:", roomID)
+        break;
+        /* KICKS */
+        case 308 :
+           
+            var kickID = buffer[0][0][0]
+            var kickID2 = buffer[0][0][1]
 
-            if(roomID === 0) {
+            //console.log(">>>>>>>>>>>>", buffer, kickID, kickID2)
+    
+            if (kickID != selfID ){
                 return;
             }
-            
-            Main.connection.sendData(202, roomID)
-            return;
-        }
+    
+            //Если выключены автоспасения, выходим
+            if(!autoSaveKick) {
+                return;
+            }
+
+            setInterval(()=>{
+                Main.connection.sendData(30, selfID);
+            }, 7000);
+        break;
     }
-
-    if (buffer.type === 28) {
-        data.setInt32(6, buffer[0], true);
-    }
-
-    if (buffer.type === 308) {
-
-        if(buffer.bytesLength < 3) {
-            console.log("308 >>>>>>>> ", buffer)
-            return;
-        }
-
-        var kickID = buffer[0][0][0]
-        var kickID2 = buffer[0][0][1]
-
-        if (kickID != selfID ){
-            return;
-        }
-
-        if(!autoSaveKick) {
-            return;
-        }
-
-        data.setInt32(6, kickID, true);
-        data.setInt32(10, kickID2, true);
-        //console.log("kickIDS:", kickID, kickID2)
-        //console.log("autosavekick send");
-    }
-
-    getData(data.buffer);
-
 }
 
+//Разблокировка гостей (снятия маски рамытия)
 function unlockGuest(){
     var items = _this.document.getElementsByClassName("guest")
     for (let i = 0; i < items.length; i++) {
@@ -221,6 +131,7 @@ function unlockGuest(){
     }
 }
 
+//Скрываем всплывающие окна в игре
 function hidePopup() {
     
     timerPopup = setInterval(function(){
@@ -245,23 +156,26 @@ function hidePopup() {
     }, 1000)
 }
 
+//Метка над контайнером игры
 function setTopLine() {
     document.getElementsByTagName("body")[0].style.borderTop = "3px solid yellow";
 }
 
+//Снятия метки (линии) над контайнером игры
 function delTopMark() {
     document.getElementsByTagName("body")[0].style.borderTop = "0px solid yellow";
 }
 
+// UI
 function createPopupMenu(){
     menu = document.createElement("div")
     menu.classList.add("menu")
 
     menu.innerHTML = `
     
-    <ul>
+    <ul class="kissme_help" >
         <li>
-            <h3>Helper KissMe [v3.3]</h3>
+            <h3>Helper KissMe FREE</h3>
             <span id="btnClose">x</span>
         <li>       
         <li>
@@ -285,6 +199,7 @@ function createPopupMenu(){
     screenGame.appendChild(menu);
 }
 
+// Обработка нажания кнопок
 function addBtn() {
 
     hideGeneralBtn = document.getElementById("hideGeneralBtn")
@@ -381,40 +296,54 @@ function addBtn() {
      }, 3000)
  }
 
-function init() {
+ //Иницилизация 
+function initialize() {
 
-    if (!this.hasOwnProperty("Main"))
+    tryTimeConnectToGame--;
+
+    if (!this.hasOwnProperty("Main")) {
+        console.log("Не смог найти обЪект Main")
+        if (tryTimeConnectToGame === 0) {
+            alert(msgError)
+            clearInterval(timerInit)
+        }
         return;
+    }
 
+    //Пыьаемся найти главный контейнер с игрой
     screenGame = document.getElementById("screen_game");
-    if(screenGame === undefined || screenGame === null)
+    if(screenGame === undefined || screenGame === null) {
+        console.log("Не смог найти главный контайнер #screen_game")
+        if (tryTimeConnectToGame === 0) {
+            alert(msgError)
+            clearInterval(timerInit)
+        }
         return;
+    }
 
+
+    //Ищим блок с кнопками...    
     headerButtons = document.getElementsByClassName("header-buttons")[0]
-    if(headerButtons === undefined || headerButtons === null)
+    if(headerButtons === undefined || headerButtons === null) {
+        console.log("Не смог найти класс .header-buttons")
+        if (tryTimeConnectToGame === 0) {
+            alert(msgError)
+            clearInterval(timerInit)
+        }
         return;
+    }
 
     clearInterval(timerInit)
 
-    if(isDebug) {
-        urlData = "http://localhost:8080/autokiss/who";
-        urlInit = "http://localhost:8080/autokiss/init";
-    } else {
-        urlData = "https://suvricksoft.ru/autokiss/who";
-        urlInit = "https://suvricksoft.ru/autokiss/init";
-    }
-
     _this = this;
     selfID = Main.self.id;
-    Main.connection.listen(receiveDataMain, [25, 28, 29, 308]);
 
-    var xhr = new XMLHttpRequest();
-    xhr.open("GET", urlInit + "/" + selfID, true);
-    xhr.send();
+    // catch packet by server id
+    Main.connection.listen(receiveDataMain, catchPacketID);
 
 
     createPopupMenu();
     addBtn();
 }
 
-var timerInit = setInterval(init, 1000)
+var timerInit = setInterval(initialize, 1000);
