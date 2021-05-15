@@ -1,0 +1,44 @@
+[
+    {
+        "stype": "vk",
+        "stypecode": 0,
+        "id": "viewer_id",
+        "token": "auth_key",
+        "token2": "access_token"
+    },
+    {
+        "stype": "mm",
+        "stypecode": 1,
+        "id": "vid",
+        "token": "authentication_key",
+        "token2": "session_key"
+    },
+    {
+        "stype": "mm",
+        "stypecode": 1,
+        "id": "vid",
+        "token": "authentication_key",
+        "token2": "access_token"
+    },
+    {
+        "stype": "ok",
+        "stypecode": 4,
+        "id": "logged_user_id",
+        "token": "auth_sig",
+        "token2": "session_key"
+    },
+    {
+        "stype": "fs",
+        "stypecode": 30,
+        "id": "userId",
+        "token": "authKey",
+        "token2": "fotostrana"
+    },
+    {
+        "stype": "sa",
+        "stypecode": 32,
+        "id": "userId",
+        "token": "authKey",
+        "token2": "sessionKey"
+    }
+]

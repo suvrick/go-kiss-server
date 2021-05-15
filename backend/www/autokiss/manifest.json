@@ -1,0 +1,30 @@
+﻿{
+    "name": "AutoKiss Helper FREE",
+    "description": "По всем техническим вопросом пишем мне в телеграм @suvrick",
+    "manifest_version": 2,
+    "version": "4.1",
+    "icons": {
+        "48": "logov2.png"
+    },
+    "content_scripts": [
+        {
+            "matches": [
+                "https://bottle2.itsrealgames.com/www/*",
+                "https://bottle2.itsrealgames.com/mobile/build/*",
+                "https://m.inspin.me/build/*"
+            ],
+            "exclude_matches": ["https://bottle2.itsrealgames.com/www/preloader.html?10"],
+            "js": ["context.js"],
+            "css": [ "data/style.css" ],
+            "persistent": true,
+            "all_frames": true,
+            "run_at": "document_end"
+        }
+    ],
+    "web_accessible_resources": [
+        "data/in.js"
+    ],
+    "permissions": [
+        "tabs"
+    ]
+}

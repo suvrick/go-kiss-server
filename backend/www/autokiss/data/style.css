@@ -1,0 +1,113 @@
+
+.btn_toggle_menu {
+    width: 40px;
+    height: 40px;
+    cursor: pointer;
+    border-radius: 25px;
+    background-color: rgba(0, 0, 0, .45);
+    background-image: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAABmJLR0QA/wD/AP+gvaeTAAAB40lEQVRIid2Vv09TURTHzyMREps0sZCQbpi4GJwMiUrQyEgZXBysDKz0jzBiok7GkEDAuMpeWLQDAwmNGoVBNwmdYPEHWNpqi9Z8GN4hHN6777XCBGdqP+d7zvfe+949T+RMBZABPgIV4B0w3EbNLdVWgDVgNEo4Qjj+AeMxzbNA01GXcYlXHUK0QcXBK8DfiJoPB309Y1ATkUSrI2kzqp7nJUVEOgzccAi/iEhWRHq8QIhIt+bWHXVhBtwNbDMPtNwRcB5YDNTeiRIXVbACdAIJNdoF7hvdmD6DvGo6gbdauxTV/DL+W1MHLip7YVa1abRbhs8puwQ0gD9An8vgmRbMGrYNDAJDwE/Dy4Z/M/yl9njsMvikyZuGfTcrfWX4vOFfDb+t7L3LoKbJpGE53cVr4ILhKeCNLmDC8C7gCnDOZbCjBqlQ8gThugdXo8TmWPaAR4Y/1RN4Yn8Hix9q8UIbBgBVw6vKGmp+JH8gSgO/NXkvbtuqWTb/C4Sj4CrMabKO4zYGGpQDiyuZXAlIR61uRkVN/LuRcBg0gEn8t6lfc734I2MR6I07AQEecDiKf+iDuw4k8UfDDeC5nv0voj4yLUwGOJxNcVEEBv7bwBgNAlPAZ/wBV8O/9dPAtWM3PjWxDzv/XdJqilcsAAAAAElFTkSuQmCC);
+    background-repeat: no-repeat;
+    background-position: center;
+    background-size: 60%;
+}
+
+.autokiss_container {
+    top: 0;
+    left: 0;
+
+    display: none;
+    width: 340px;
+    height: inherit;
+    background: #644da7;
+    color: white;
+    position: fixed;
+    font-size: 15px;
+    z-index: 9;
+
+    /* -webkit-transition: rigth 3s;
+    -moz-transition: rigth 3s;
+    transition: rigth 3s; */
+}
+
+.autokiss_container h3 {
+    font-family: 'Neuron Black', 'Roboto';
+    margin-left: 40px;
+    font-size: 25px;
+}
+
+.autokiss_container > span {
+    position: absolute;
+    color: white;
+
+    right: 20px;
+    top: 22px;
+    width: 24px;
+    height: 24px;
+    padding: 5px;
+    cursor: pointer;
+    background: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAABmJLR0QA/wD/AP+gvaeTAAAAkUlEQVRIie2VwQ2AIBAE1R40WiKWKw/LGR+SaIzi7SE/90XC7Y7CAU3zSxUQgMHhG4DwVjSzKyqQFB6Td84V9sCSCldgMoRfPaNqeITI4QrEHW6BFIfnIJ+FnyDnDomXsdzOlj+Rvrwr4LYF3kNVl+huQz2H0RyemdMgllZ0Q5Q+lyGeQyRBqH1dp+J6D86vO23cMwceYU71pwAAAABJRU5ErkJggg==) 100% no-repeat;
+    background-position: center;
+}
+
+.autokiss_container > span:hover {
+    background-color: rgba(0,0, 0, .2);
+}
+
+.autokiss_menu {
+    font-family: "Roboto" !important;
+    list-style: none;
+}
+
+.autokiss_menu li {
+    padding: 5px;
+    display: flex;
+    align-items: center;
+    max-width: 270px;
+}
+
+.autokiss_menu li:hover{
+    background: rgba(0, 0, 0, .25);
+}
+
+.autokiss_menu li label{
+    padding: 5px;
+    cursor: pointer;
+    display: inline-block;
+    width: 200px;
+    text-transform: uppercase;
+    font-size: 12px;
+}
+
+.on {
+    background: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADIAAAAyCAYAAAAeP4ixAAAABmJLR0QA/wD/AP+gvaeTAAABZUlEQVRoge2aMUoDQRSG/7VNtDHmBnoC+xhrQRK8hqCFBEvxCB5EMZ5DrEVPIBJNsNTP5oVEjevuwk4e8r5mFubN7P8xbLNvpCAI8sjyJoG2pENJe5I2JTVShJrjTdK9pBtJF1mWPZXeATgAxvjhFehXkfiwDS6BDpD6NAQ0gB3gyrK8A72ii9vMTuKk5qyFAQaW6QVoFVlwPj2JBPlKAVxbtrMixXdW3EmQrRRA17LdFimeWHEzQbZSAKuWbVykGIAEuSrxW76VZYSpgxDxRoh4I0S8ESLeCBFvhIg3QsQbIeKNEPFGiHgjRLwRIt4IEW8sEplIktOf2Gv2+OMn9iKRRxu3a0tUnWmmh+8Ti0SGNh7VFqc6xzYOc6skCdiwxiPAoN5cxQFOLdMIWC+6qG+NR6zd1V3GNwM0gV1gONcM3S+7Sc8aj14YkSPx14WBlmYXBrYkpT6Vib5eGHhO/P4g+Dd8AqCOKXIvGoizAAAAAElFTkSuQmCC);
+    height: 24px;
+    width: 24px;
+    display: inline-block;
+    background-size: 100%;
+    background-repeat: no-repeat;
+}
+
+.off {
+    height: 24px;
+    width: 24px;
+    display: inline-block;
+    background: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAABmJLR0QA/wD/AP+gvaeTAAABd0lEQVRIibWVMUsDQRCF38QUQRBjEgQrOxtRsFIUawvxf8TSXi0UQbARG1OmszYEBK0tLEW00CZEhFhpISio+SzcwOa8C3e5OM2xb2bet3t37Ej/HBYmAvmoXI/4NLO3oJj1TLOStiSVJb1L+k4IKEu6iMwCO0ANGEtoHPQpAn9PDzwPwDwP3AJLwUQBaKY0zwLnwLavZ7xnOw1A0pGkF0m7YfQS0OjXGdgALoGcW88DowMBAGvAAzDuaXdAKTUAmAYegZmA3ugAMuGtscwnJNUlrZvZTVRdJADIAKfAbEhuWFJN0oGZ1ePsJvQVAavAE7DoaQacAIc9/BqxvwGw7CArbr0PnLmrJT3A5eeAJlABroGRqNq+AK5mCrgCJnvVBQGRxwyGmd0DC2ZG3B4p4W+a1NwHtJPCYvh2321ACyikdXbzoOWTOlGRVE0DAYqSqpKOO5p5yaykTf2Ovg8lH5lDknLOfM/MvroAgZ30M/Qxs9eEPenjB4GsRJiub/bVAAAAAElFTkSuQmCC);
+    background-size: 100%;
+    background-repeat: no-repeat;
+}
+
+.autokiss_container .footer {
+    position: absolute;
+    bottom: 20px;
+}
+
+.autokiss_container .footer p {
+    font-size: 12px;
+    color: #eee4fd;
+    padding: 20px 40px;
+}
+
+.autokiss_container a {
+    font-size: 12px;
+    color: #fff !important;
+}
