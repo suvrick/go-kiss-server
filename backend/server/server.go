@@ -2,6 +2,7 @@ package server
 
 import (
 	"log"
+	"net/http"
 
 	"github.com/suvrick/go-kiss-server/controllers"
 	"github.com/suvrick/go-kiss-server/game/models"
@@ -9,6 +10,7 @@ import (
 	"github.com/suvrick/go-kiss-server/repositories"
 	"github.com/suvrick/go-kiss-server/services"
 	"github.com/suvrick/go-kiss-server/session"
+	"github.com/suvrick/go-kiss-server/tasks"
 
 	"github.com/gin-gonic/gin"
 	"gorm.io/driver/postgres"
@@ -47,11 +49,11 @@ func Start(config *Config) error {
 
 	controllers.NewAdminController(router, userService)
 
-	//taskServer := tasks.NewTaskManager(userService, botService)
-	//go taskServer.Run()
+	taskServer := tasks.NewTaskManager(userService, botService)
+	go taskServer.Run()
 
-	//return http.ListenAndServeTLS(":443", "../certs/cert.crt", "../certs/pk.key", router)
-	return router.Run(config.BindAddr)
+	return http.ListenAndServeTLS(":443", "../certs/cert.crt", "../certs/pk.key", router)
+	//return router.Run(config.BindAddr)
 }
 
 func createDB(dbURL string) (*gorm.DB, error) {
