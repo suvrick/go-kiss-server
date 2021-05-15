@@ -21,6 +21,23 @@ const (
 	LOGIN_ERROR              SERVER_AUTH_RESULT = 0xff
 )
 
+func (s SERVER_AUTH_RESULT) ToString() string {
+	switch s {
+	case LOGIN_SUCCESS:
+		return "SUCCESS"
+	case LOGIN_EXIST:
+		return "EXIST"
+	case LOGIN_BLOCKED:
+		return "BLOCKED"
+	case LOGIN_FAILED:
+		return "FAILED"
+	case LOGIN_CAPTCHA:
+		return "CAPTCHA"
+	default:
+		return "XZ"
+	}
+}
+
 // "B,IIBI[B]IIIISBIBS"
 //LOGIN(4); status:B, inner_id:I, balance:I, invited:B, logout_time:I,
 //[flags:B], games_count:I, kisses_daily_count:I, last_payment_time:I,

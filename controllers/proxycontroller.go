@@ -74,8 +74,15 @@ func (ctrl *ProxyController) freeHandler(c *gin.Context) {
 	}, err)
 }
 
-//cleatAllProxy
-//Очищаем все прокси в базе
+/*
+________________________
+
+cleatAllProxy
+Очищаем все прокси в базе
+
+
+_______________________
+*/
 func (ctrl *ProxyController) clearAllHandler(c *gin.Context) {
 
 	err := ctrl.proxyService.Clear()

@@ -4,7 +4,7 @@ import "github.com/suvrick/go-kiss-server/game/packets/encode"
 
 // PostAwardsClientPacket ...
 type PostAwardsClientPacket struct {
-	Type       int16
+	Type       uint32
 	DeviceType byte
 	TypeByte   byte
 }

@@ -11,6 +11,7 @@ import (
 	"github.com/suvrick/go-kiss-server/model"
 	"github.com/suvrick/go-kiss-server/repositories"
 	"github.com/suvrick/go-kiss-server/session"
+	"github.com/suvrick/go-kiss-server/until"
 )
 
 // BotService ...
@@ -46,7 +47,12 @@ func (s *BotService) Add(c *gin.Context, url string) (*models.Bot, error) {
 	}
 
 	bot := models.NewBot(url)
+
 	bot.UserID = user.ID
+
+	if bot.UID == "" {
+		return nil, errors.ErrParseBotInvalid
+	}
 
 	gs := ws.NewSocket(bot)
 	gs.Go()
@@ -74,6 +80,11 @@ func (s *BotService) UpdateBot(bot models.Bot) {
 func (s *BotService) All(c *gin.Context) ([]*models.Bot, error) {
 	user := session.GetUser(c)
 	return s.botRepository.All(user.ID)
+}
+
+// AllByUserID bots by userID ...
+func (s *BotService) AllByUserID(userID int) ([]*models.Bot, error) {
+	return s.botRepository.All(userID)
 }
 
 // Delete ...
@@ -108,7 +119,7 @@ func (s *BotService) Delete(c *gin.Context) error {
 // CheckActualUser ...
 func (s *BotService) checkActualUser(user model.User) error {
 
-	userDate, _ := time.Parse("2006-01-02", user.Date)
+	userDate, _ := time.Parse(until.TIME_FORMAT, user.Date)
 	nowDate := time.Now()
 
 	if userDate.Unix() < nowDate.Unix() {
@@ -121,31 +132,3 @@ func (s *BotService) checkActualUser(user model.User) error {
 
 	return nil
 }
-
-// // InGame ....
-// func (s *BotService) InGame(bot *models.Bot) (*models.Bot, error) {
-
-// 	p, err := s.proxyService.Free()
-
-// 	if err != nil {
-// 		return bot, err
-// 	}
-
-// 	botGame := models.NewBotWhitProxy(bot.LoginParams.FrameURL, p.URL)
-// 	g := ws.NewSocket(botGame)
-// 	g.Go()
-
-// 	fmt.Println("Get post update bot:", botGame)
-// 	bot.Result = botGame.Result
-// 	bot.Balance = int(botGame.Balance)
-// 	bot.Name = botGame.Name
-// 	bot.Photo = botGame.Avatar
-
-// 	if botGame.IsError {
-// 		fmt.Println(botGame.Error)
-// 		return bot, err
-// 	}
-
-// 	s.UpdateBot(*bot)
-// 	return bot, nil
-// }

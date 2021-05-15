@@ -25,10 +25,16 @@ func Load(packet ClientPacket) []byte {
 			buffer = WriteNumber(buffer, uint64(fieldValue.(uint8)))
 		case "int16":
 			buffer = WriteNumber(buffer, uint64(fieldValue.(int16)))
+		case "uint16":
+			buffer = WriteNumber(buffer, uint64(fieldValue.(uint16)))
 		case "int":
 			buffer = WriteNumber(buffer, uint64(fieldValue.(int)))
+		case "uint":
+			buffer = WriteNumber(buffer, uint64(fieldValue.(uint)))
 		case "int32":
 			buffer = WriteNumber(buffer, uint64(fieldValue.(int32)))
+		case "uint32":
+			buffer = WriteNumber(buffer, uint64(fieldValue.(uint32)))
 		case "int64":
 			buffer = WriteNumber(buffer, uint64(fieldValue.(int64)))
 		case "uint64":

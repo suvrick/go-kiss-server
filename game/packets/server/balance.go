@@ -10,7 +10,7 @@ import (
 
 type BalanceServerPacket struct {
 	Bottles int32
-	Reason  byte
+	//Reason  byte
 }
 
 func (pack *BalanceServerPacket) Parse(buffer io.Reader) error {

@@ -3,6 +3,7 @@ package ws
 import (
 	"bytes"
 	"errors"
+	"fmt"
 	"log"
 	"net/http"
 	"net/url"
@@ -22,6 +23,8 @@ type GameSock struct {
 	bot            *models.Bot
 	proxy          *models.Proxy
 	botChanUpdater chan *models.Bot
+
+	debug bool
 }
 
 const host = "wss://bottlews.itsrealgames.com"
@@ -35,9 +38,14 @@ func NewSocket(b *models.Bot) *GameSock {
 		client: nil,
 		msgID:  0,
 		bot:    b,
+		debug:  true,
 	}
 
 	return gs
+}
+
+func (gs *GameSock) SetProxy(p *models.Proxy) {
+	gs.proxy = p
 }
 
 // Go start game
@@ -70,8 +78,8 @@ func (gs *GameSock) connect() error {
 	dialer = wss.Dialer{
 		Proxy: http.ProxyURL(&url.URL{
 			Scheme: "http",
-			Host:   "zproxy.lum-superproxy.io:22222",
-			User:   url.UserPassword("lum-customer-c_07f044e7-zone-static", "dodwwsy0fhb00"),
+			Host:   "zproxy.lum-superproxy.io:22225",
+			User:   url.UserPassword("lum-customer-c_07f044e7-zone-static", "dodwwsy0fhb0"),
 		}),
 		HandshakeTimeout: (time.Second * 60),
 	}
@@ -109,26 +117,40 @@ func (gs *GameSock) readMessage() {
 		msgID, _ := decode.ReadVarUint(reader, 32)
 		msgType, _ := decode.ReadVarUint(reader, 16)
 
-		log.Printf("Recv >> msgType: %d,msgID: %d, msgLen: %d", msgType, msgID, msgLen)
+		if gs.debug {
+			log.Printf("Recv >> msgType: %d,msgID: %d, msgLen: %d", msgType, msgID, msgLen)
+		}
 
 		switch msgType {
 		case 4:
 			ok := gs.loginReceive(reader)
 			if !ok {
-				gs.error("readMessage", errors.New("Auth error"))
+				gs.error("readMessage", errors.New("Not authenticated"))
 				return
 			}
+
+			gs.bonusSend()
 		case 5:
 			gs.infoReceive(reader)
-			gs.close()
-			return
 		case 7:
 			gs.balanceReceive(reader)
 		case 13:
-			gs.gameListRewardsReceive(reader)
+			id := gs.gameListRewardsReceive(reader)
+			if id == 0 {
+				gs.bot.IsError = false
+				gs.close()
+				return
+			}
+
+			gs.getRewardSend(id)
+		case 250:
+			{
+				fmt.Println(msg)
+			}
 		case 17:
 			gs.bonusReceive(reader)
 		}
+
 	}
 }
 
@@ -136,16 +158,18 @@ func (gs *GameSock) sendMessage(pack encode.ClientPacket) {
 
 	msg := pack.Bytes()
 
-	IDArr := make([]byte, 0)
-	IDArr = encode.WriteNumber(IDArr, uint64(gs.msgID))
-	lengthMsg := len(msg) + len(IDArr)
+	msgID_array := make([]byte, 0)
+	msgID_array = encode.WriteNumber(msgID_array, uint64(gs.msgID))
+	lengthMsg := len(msg) + len(msgID_array)
 
 	data := make([]byte, 0)
 	data = append(data, encode.WriteNumber(data, uint64(lengthMsg))...)
-	data = append(data, IDArr...)
+	data = append(data, msgID_array...)
 	data = append(data, msg...)
 
-	log.Printf("%v", data)
+	if gs.debug {
+		log.Printf("Send >> id: %v, data: %v\n", gs.msgID, data)
+	}
 
 	err := gs.client.WriteMessage(wss.BinaryMessage, data)
 	gs.msgID++
@@ -157,7 +181,7 @@ func (gs *GameSock) sendMessage(pack encode.ClientPacket) {
 }
 
 func (gs *GameSock) error(funcName string, err error) {
-	//gs.bot.Error = fmt.Sprintf("[%s] >> %s", funcName, err.Error())
+	gs.bot.LogERROR(funcName, err.Error())
 	gs.bot.IsError = true
 	gs.close()
 }
@@ -167,5 +191,11 @@ func (gs *GameSock) close() {
 	if gs.client != nil {
 		gs.client.Close()
 		gs.client = nil
+	}
+
+	if gs.bot.IsError {
+		gs.bot.LogERROR("close", "error close connection")
+	} else {
+		gs.bot.LogINFO("close", "normal close connection")
 	}
 }

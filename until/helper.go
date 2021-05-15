@@ -8,11 +8,13 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
+var TIME_FORMAT = "2006-01-02 15:04:05"
+
 // Response ...
 type Response struct {
 	Code  int         `json:"code"`
-	Error string      `json:"error"`
 	Data  interface{} `json:"data"`
+	Error string      `json:"error"`
 }
 
 // WriteResponse ...
@@ -28,7 +30,7 @@ func WriteResponse(c *gin.Context, code int, data gin.H, err error) {
 		Error: msgErr,
 	}
 
-	c.JSON(code, response)
+	c.JSON(200, response)
 	c.Abort()
 }
 

@@ -4,6 +4,7 @@ import (
 	"time"
 
 	"github.com/suvrick/go-kiss-server/game/models"
+	"github.com/suvrick/go-kiss-server/until"
 	"gorm.io/gorm"
 )
 
@@ -27,7 +28,7 @@ func (repo *BotRepository) Add(bot models.Bot) (string, error) {
 
 // Update ...
 func (repo *BotRepository) Update(bot models.Bot) error {
-	bot.LastUseDay = time.Now().Format("2006-01-02")
+	bot.LastUseDay = time.Now().Format(until.TIME_FORMAT)
 	return repo.db.Save(&bot).Error
 }
 
@@ -47,5 +48,5 @@ func (repo *BotRepository) Find(botUID string, userID int) (models.Bot, error) {
 
 // Delete ...
 func (repo *BotRepository) Delete(bot models.Bot) error {
-	return repo.db.Delete(&bot).Error
+	return repo.db.Where("uid = ?", bot.UID).Delete(&bot).Error
 }

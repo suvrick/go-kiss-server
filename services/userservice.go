@@ -7,6 +7,7 @@ import (
 	"github.com/suvrick/go-kiss-server/model"
 	"github.com/suvrick/go-kiss-server/repositories"
 	"github.com/suvrick/go-kiss-server/session"
+	"github.com/suvrick/go-kiss-server/until"
 )
 
 type UserService struct {
@@ -37,7 +38,7 @@ func (s *UserService) Register(email, password string) (int, error) {
 		Email:    email,
 		Password: password,
 		Role:     "player",
-		Date:     time.Now().Format("2006-01-02"),
+		Date:     time.Now().Format(until.TIME_FORMAT),
 	}
 
 	return s.userRepo.Create(u)

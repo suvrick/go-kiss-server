@@ -1,2 +1,0 @@
-bind_addr = ":8080"
-database_url = "host=localhost user=suvrick password=bl69unn dbname=kissdb sslmode=disable"

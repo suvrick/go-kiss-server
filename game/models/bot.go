@@ -5,6 +5,7 @@ import (
 	"time"
 
 	"github.com/suvrick/go-kiss-server/game/parser"
+	"github.com/suvrick/go-kiss-server/until"
 )
 
 type ServerLoginResult byte
@@ -90,7 +91,7 @@ func NewBot(url string) *Bot {
 
 		LoginParams: *parser.NewLoginParams(url),
 		Logger:      make([]string, 0),
-		LastUseDay:  time.Now().Format("2006-01-02"),
+		LastUseDay:  time.Now().Format(until.TIME_FORMAT),
 	}
 
 	if bot.SocialCode == 255 {
@@ -136,7 +137,7 @@ func NewBotWhitProxy(url string, proxy string) *Bot {
 
 // ToString ...
 func (bot *Bot) ToString() string {
-	return fmt.Sprintf("****Bot****\n Name: %v\n InnerID:  %v\n Balance: %v\n Result: %v\n IsBonus: %v\n Bonus: %v\n Avatar: %v\n Profile: %v\n LoginParams:\n Social: %v\n LoginID: %v\n Token: %v\n Token2:%v\n",
+	return fmt.Sprintf("Bot:\n Name: %v\n InnerID:  %v\n Balance: %v\n Result: %v\n IsBonus: %v\n Bonus: %v\n Avatar: %v\n Profile: %v\n LoginParams:\n Social: %v\n LoginID: %v\n Token: %v\n Token2:%v\n",
 		bot.Name,
 		bot.InnerID,
 		bot.Balance,
@@ -151,6 +152,12 @@ func (bot *Bot) ToString() string {
 		bot.Token2,
 	)
 }
+func (bot *Bot) PrintLog() {
+	fmt.Println("Logger: ")
+	for i, v := range bot.Logger {
+		fmt.Printf("\t%d) %v\n", i, v)
+	}
+}
 
 type LogType int8
 
@@ -162,10 +169,14 @@ const (
 func (bot *Bot) LogINFO(methodName, msg string)  { bot.Log(INFO, methodName, msg) }
 func (bot *Bot) LogERROR(methodName, msg string) { bot.Log(ERROR, methodName, msg) }
 func (bot *Bot) Log(t LogType, methodName, msg string) {
+
 	switch t {
 	case INFO:
-		bot.Logger = append(bot.Logger, fmt.Sprintf("INFO (%s) %s", methodName, msg))
+		msg = fmt.Sprintf("INFO >> (%s) %s", methodName, msg)
 	case ERROR:
-		bot.Logger = append(bot.Logger, fmt.Sprintf("ERROR >> (%s) %s", methodName, msg))
+		msg = fmt.Sprintf("ERROR >> (%s) %s", methodName, msg)
 	}
+
+	fmt.Println(msg)
+	bot.Logger = append(bot.Logger, msg)
 }

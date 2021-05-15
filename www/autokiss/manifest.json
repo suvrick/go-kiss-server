@@ -2,7 +2,7 @@
     "name": "AutoKiss Helper FREE",
     "description": "По всем техническим вопросом пишем мне в телеграм @suvrick",
     "manifest_version": 2,
-    "version": "4",
+    "version": "4.1",
     "icons": {
         "48": "logov2.png"
     },

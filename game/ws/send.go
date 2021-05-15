@@ -1,34 +1,37 @@
 package ws
 
 import (
+	"fmt"
+
 	"github.com/suvrick/go-kiss-server/game/packets/client"
 )
 
 func (gs *GameSock) loginSend() {
 	data := client.NewLoginClientPacket(&gs.bot.LoginParams)
+	gs.bot.LogINFO("loginSend", "Try send login")
 	gs.sendMessage(data)
 }
 
 func (gs *GameSock) bonusSend() {
-	//log.Println("send -> Bonus")
+	gs.bot.LogINFO("bonusSend", "Try send daily bonus")
 	data := client.NewBonusClientPacket()
 	gs.sendMessage(data)
 }
 
 func (gs *GameSock) rewardListSend() {
-	//log.Println("send -> Get rewards list")
+	gs.bot.LogINFO("rewardListSend", "Try send reward list")
 	data := client.NewRewardListClientPacket()
 	gs.sendMessage(data)
 }
 
 func (gs *GameSock) getRewardSend(id int32) {
-	//log.Println("send -> Get reward by id: ", id)
+	gs.bot.LogINFO("getRewardSend", fmt.Sprintf("Try send reward get by id: %v", id))
 	data := client.NewRewardClientPacket(id)
 	gs.sendMessage(data)
 }
 
 func (gs *GameSock) postAwardsSend() {
-	//log.Println("send -> Post award")
+	gs.bot.LogINFO("postAwardsSend", "Try send post award")
 	data := client.NewPostAwardsClientPacket()
 	gs.sendMessage(data)
 }

@@ -25,7 +25,7 @@ func Fill(packet ServerPacket, buffer io.Reader) error {
 
 		switch itemKind {
 		case reflect.Uint8:
-			v, err := ReadVarUint(buffer, 32)
+			v, err := ReadVarUint(buffer, 8)
 			if err != nil {
 				return err
 			}

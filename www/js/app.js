@@ -1,7 +1,11 @@
+
 var app = new Vue({
+
     el: "#app",
     data: {
         self: null,
+
+        frameUrl: "",
 
         email: "",
         password: "",
@@ -15,6 +19,9 @@ var app = new Vue({
         bots: [],
         botsContainer: [],
         botsContainerStep: 0,
+
+        selectedBots: [],
+        selectAllFlag: false,
         
         proxies: [],
         proxiesContainer: [],
@@ -24,9 +31,42 @@ var app = new Vue({
         usersContainer: [],
         usersContainerStep: 0,
 
-        toastMsg: ""
+        toastMsg: "",
+        progress: true
     },
     methods: {
+        toggleSelected() {
+            this.selectAllFlag = !this.selectAllFlag
+            if (this.selectAllFlag) {
+               this.bots.forEach(b => {
+                this.selectedBots.push(b)
+               })
+            } else {
+                this.selectedBots = []
+            }
+        },
+        updateSelectedBots: function() {
+            console.log(this.selectedBots)
+        },
+        deleteBotsHandle(){
+           for (let i = 0; i < this.selectedBots.length; i++) {
+               const b = this.selectedBots[i];
+               this.removeBot(b.UID)
+           }
+        },
+        addBotClick: function(){
+
+            if (this.frameUrl === ''){
+                return
+            }
+            
+            this.addBot(this.frameUrl)
+            this.frameUrl = '';
+            this.showAlert("adding new bot")
+        },
+        toggleRow: function(bot){
+            console.log(bot)
+        },
         navTab: function(id){
             var triggerEl = document.querySelector('#' + id)
             var tab = new window.bootstrap.Tab(triggerEl)
@@ -40,15 +80,6 @@ var app = new Vue({
                 this.updateUsersContainer();
             }
         },
-
-        getAllProxies: async function(){
-            var result = await this.getFetchData("proxy/all", "GET")
-            if (result.code === 200) {
-                this.proxies = result.data.proxies
-                this.updateProxiesContainer()
-            }
-        },
-
         getAllBots: async function () {
             var result = await this.getFetchData("bots/all", "GET")
             if (result.code === 200) {
@@ -75,26 +106,6 @@ var app = new Vue({
             this.botsContainerStep += step;
             this.updateBotsContainer();
         },
-
-        updateProxiesContainer: function(){
-            var start = (this.proxiesContainerStep * 5)
-            var end = (this.proxiesContainerStep * 5) + 5
-            this.proxiesContainer = this.proxies.slice(start, end)
-        },
-        updateProxiesContainerStep: function(step){
-            if(this.proxiesContainerStep === 0 && step === -1){
-                return;
-            }
-
-            if(this.proxiesContainerStep * 5 - 5 > this.proxies.length && step === 1){
-                return;
-            }
-
-
-            this.proxiesContainerStep += step;
-            this.updateProxiesContainer();
-        },
-
         updateUsersContainer: function(){
             var start = (this.usersContainerStep * 5)
             var end = (this.usersContainerStep * 5) + 5
@@ -230,6 +241,8 @@ var app = new Vue({
 
         getFetchData: async function (url, method, data) {
             
+            this.progress = true
+
             var response = await fetch(url, {
                 method: method,
                 headers: {
@@ -240,6 +253,8 @@ var app = new Vue({
             
             var result = await response.json();
             
+            this.progress = false;
+
             switch(result?.code){
                 case 401 :
                     this.navTab('tabLoginBtn')
@@ -251,6 +266,8 @@ var app = new Vue({
                 default:
                     return result
             }
+
+            
         },
 
         showAlert: function(msg){

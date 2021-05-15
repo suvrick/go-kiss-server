@@ -10,6 +10,7 @@ import (
 	"github.com/suvrick/go-kiss-server/repositories"
 	"github.com/suvrick/go-kiss-server/services"
 	"github.com/suvrick/go-kiss-server/session"
+	"github.com/suvrick/go-kiss-server/tasks"
 
 	"github.com/gin-gonic/gin"
 	"gorm.io/driver/postgres"
@@ -26,52 +27,30 @@ func Start(config *Config) error {
 
 	router := gin.Default()
 
+	router.StaticFile("/", "./www/index.html")
+	router.StaticFile("autokiss.zip", "./www/autokiss/autokiss.zip")
+	router.Static("bootstrap", "./www/bootstrap")
+	router.Static("css", "./www/css")
+	router.Static("js", "./www/js")
+
 	userRepo := repositories.NewUserRepository(db)
 	proxyRepo := repositories.NewProxyRepository(db)
 	botRepo := repositories.NewBotRepository(db)
-	kissRepo := repositories.NewAutoKissRepository(db)
-	stateRepo := repositories.NewStateDowloadRepository(db)
 
 	session.SetDb(userRepo)
 
-	//middlewares.NewAuthMiddleWare(sg, userRepo)
 	userService := services.NewUserService(userRepo)
 	proxyService := services.NewProxyService(proxyRepo)
 	botService := services.NewBotService(botRepo, userService, proxyService)
-	kissService := services.NewAutoKissService(kissRepo)
-	stateDownloadService := services.NewStateDownloadService(stateRepo)
 
-	controllers.NewAutoKissController(router, kissService, stateDownloadService)
 	controllers.NewUserController(router, userService)
 	controllers.NewBotController(router, botService, userService)
 	controllers.NewProxyController(router, proxyService)
 
-	controllers.NewAdminController(router, userService, kissService, stateDownloadService)
+	controllers.NewAdminController(router, userService)
 
-	router.Static("/bootstrap", "www/bootstrap")
-
-	router.Static("/js", "www/js")
-	router.Static("/css", "www/css")
-
-	router.GET("", func(c *gin.Context) {
-		c.File("www/index.html")
-	})
-
-	router.GET("/login", func(c *gin.Context) {
-		c.File("www/login.html")
-	})
-
-	router.GET("/register", func(c *gin.Context) {
-		c.File("www/register.html")
-	})
-
-	router.GET("/admin", func(c *gin.Context) {
-		c.File("www/admin.html")
-	})
-
-	router.GET("/proxy", func(c *gin.Context) {
-		c.File("www/proxy.html")
-	})
+	taskServer := tasks.NewTaskManager(userService, botService)
+	go taskServer.Run()
 
 	return http.ListenAndServeTLS(":443", "../certs/cert.crt", "../certs/pk.key", router)
 	//return router.Run(config.BindAddr)
@@ -91,8 +70,6 @@ func createDB(dbURL string) (*gorm.DB, error) {
 	db.AutoMigrate(&model.User{})
 	db.AutoMigrate(&models.Bot{})
 	db.AutoMigrate(&model.Proxy{})
-	db.AutoMigrate(&model.KissUser{})
-	db.AutoMigrate(&model.KissState{})
 
 	return db, err
 }

@@ -57,16 +57,23 @@ func (ctrl *BotController) allHandler(c *gin.Context) {
 
 	bots, err := ctrl.botService.All(c)
 
+	if err != nil {
+		until.WriteResponse(c, 201, gin.H{
+			"count": len(bots),
+			"bots":  bots,
+		}, err)
+	}
+
 	until.WriteResponse(c, 200, gin.H{
 		"count": len(bots),
 		"bots":  bots,
-	}, err)
+	}, nil)
 }
 
 func (ctrl *BotController) removeHandler(c *gin.Context) {
 
 	if err := ctrl.botService.Delete(c); err != nil {
-		until.WriteResponse(c, 200, gin.H{
+		until.WriteResponse(c, 201, gin.H{
 			"result": "fail",
 		}, err)
 		return
