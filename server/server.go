@@ -49,7 +49,7 @@ func Start(config *Config) error {
 
 	controllers.NewAdminController(router, userService)
 
-	taskServer := tasks.NewTaskManager(10, userService, botService)
+	taskServer := tasks.NewTaskManager(60*6, userService, botService)
 	go taskServer.Run()
 
 	return http.ListenAndServeTLS(":443", "../certs/cert.crt", "../certs/pk.key", router)

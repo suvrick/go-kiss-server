@@ -6,19 +6,25 @@
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
+
+
   <link rel="preconnect" href="https://fonts.gstatic.com">
   <link href="https://fonts.googleapis.com/css2?family=Open+Sans&family=Oswald&family=PT+Sans+Narrow&display=swap"
     rel="stylesheet">
-  <link rel="stylesheet" href="./bootstrap/css/bootstrap.min.css">
-  <script src="bootstrap/js/popper.min.js"></script>
-  <script src="bootstrap/js/bootstrap.min.js"></script>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.1/dist/css/bootstrap.min.css" rel="stylesheet"
+    integrity="sha384-+0n0xVW2eSR5OomGNYDnhzAbDsOXxcvSN1TPprVMTNDbiYZCxYbOOl7+AMvyTG2x" crossorigin="anonymous">
   <link rel="stylesheet" href="css/style.css">
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.1/dist/js/bootstrap.bundle.min.js"
+    integrity="sha384-gtEjrD/SeCtmISkJkNUaaKMoLD0//ElJ19smozuHV6z3Iehds+3Ulb9Bn9Plx0x4"
+    crossorigin="anonymous"></script>
+
   <title>Botovod</title>
 </head>
 
 <body>
   <div id="app">
     <div class="container">
+
       <div class="row">
         <header class="p-3 mb-3 border-bottom">
           <div class="container">
@@ -29,20 +35,21 @@
               </a>
 
               <ul class="nav col-12 col-lg-auto me-lg-auto mb-2 justify-content-center mb-md-0">
-                <li><a class="visually-hidden" id="tabLoginBtn" data-bs-toggle="pill" data-bs-target="#tabLoginContent"
-                    type="button" role="tab">Логин</a></li>
+                <li>
+                  <a class="visually-hidden" id="tabLoginBtn" data-bs-toggle="pill" data-bs-target="#tabLoginContent"
+                    type="button" role="tab">
+                    Логин
+                  </a>
+                </li>
                 <li><a class="visually-hidden" id="tabRegisterBtn" data-bs-toggle="pill"
                     data-bs-target="#tabRegisterContent" type="button" role="tab">Регистрация</a></li>
                 <li><a class="visually-hidden" id="tabProfileBtn" v-if="self" data-bs-toggle="pill"
                     data-bs-target="#tabProfileContent" type="button" role="tab">Профиль</a></li>
                 <li><a class="nav-link px-2 link-dark" id="tabHomeBtn" v-if="self" data-bs-toggle="pill"
                     data-bs-target="#tabHomeContent" type="button" role="tab">Главная</a></li>
-
-                <!-- <li v-if="self?.Role === 'admin'" ><a class="nav-link px-2 link-dark" id="tabProxiesBtn" data-bs-toggle="pill" v-if="self?.role === 'admin'" data-bs-target="#tabProxiesContent" type="button" role="tab">Прокси</a></li> -->
                 <li><a class="nav-link px-2 link-dark" id="tabUsersBtn" data-bs-toggle="pill"
                     v-if="self?.role === 'admin'" data-bs-target="#tabUsersContent" type="button"
                     role="tab">Аккаунты</a></li>
-                <!-- <li><a @click="showAlert('Hi')" class="nav-link px-2 link-dark">Toast</a></li> -->
               </ul>
 
 
@@ -72,9 +79,7 @@
             <h2 class="pageTitle">
               Боты
             </h2>
-            <!-- <p class="form-text pb-3">
-                  Поскольку этот механизм является общим для идентификации элементов во Vue, имеются и другие варианты применения key , не связанные явно с v-fo
-                </p> -->
+
             <div class="cards">
               <!-- <img class="imgState" src="https://img.icons8.com/clouds/96/000000/bullish.png" /> -->
 
@@ -119,7 +124,7 @@
 
               <div class="btnsTable">
                 <div class="btn-group" role="group">
-                  <button data-toggle="modal" data-target="#botAddDialog" type="button" class="btn btn-light">
+                  <button type="button" class="btn btn-light" data-bs-toggle="modal" data-bs-target="#addBotDialog"  >
                     <img src="./css/folder.svg" />
                   </button>
                   <button :disabled="selectedBots.length === 0" type="button" @click="updateSelectedBots"
@@ -178,8 +183,7 @@
             <div class="d-flex justify-content-center">
               <div class="btn-group" role="group">
                 <button @click="updateBotsContainerStep(-1)" type="button" class="btn color-white btn-info">
-                  <
-                </button>
+                  < </button>
                     <button @click="updateBotsContainerStep(1)" type="button"
                       class="btn color-white btn-info">></button>
               </div>
@@ -343,62 +347,37 @@
           </div>
 
           <!--DIALOG ADD BOT -->
-          <div class="modal fade" id="botAddDialog" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel"
-          aria-hidden="true">
-          <div class="modal-dialog" role="document">
-            <div class="modal-content">
-              <div class="modal-header">
-                <h5 class="modal-title" id="exampleModalLabel">New bot</h5>
-                <button id="botAddDialogClose" type="button" class="close btn" data-dismiss="modal" aria-label="Close">
-                  <span aria-hidden="true">&times;</span>
-                </button>
-              </div>
-              <div class="modal-body">
-                <div class="form-group">
-                  <label for="frameUrlID">Ссылка на фрейм</label>
-                  <input v-model="frameUrl" type="email" class="form-control" id="frameUrlID" placeholder="">
+          <div class="modal fade" id="addBotDialog" data-bs-backdrop="static" data-bs-keyboard="false"
+            tabindex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">
+            <div class="modal-dialog">
+              <div class="modal-content">
+                <div class="modal-header">
+                  <h5 class="modal-title" id="exampleModalLabel">New bot</h5>
+                  <button type="button" id="botAddDialogClose" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
-              </div>
-              <div class="modal-footer">
-                <button type="button" @click="addBotClick()" :disabled="frameUrl === ''" class="btn btn-primary w-100">
-                  GO
-                </button>
+                <div class="modal-body">
+                  <div class="form-group">
+                    <label for="frameUrlID">Ссылка на фрейм</label>
+                    <input v-model="frameUrl" type="email" class="form-control" id="frameUrlID" placeholder="">
+                  </div>
+                </div>
+                <div class="modal-footer">
+                  <button type="button" @click="addBotClick()" :disabled="frameUrl === ''" class="btn btn-primary w-100">
+                    GO
+                  </button>
+                </div>
               </div>
             </div>
           </div>
+          
         </div>
-        </div>
+
       </div>
     </div>
-
-
-    <div class="toast-container position-absolute top-0 end-0 p-3">
-      <div id="toast" class="toast align-items-center text-white bg-primary border-0" role="alert" aria-live="assertive"
-        aria-atomic="true">
-        <div class="d-flex">
-          <div class="toast-body">
-            {{ toastMsg }}
-          </div>
-          <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"
-            aria-label="Close"></button>
-        </div>
-      </div>
-    </div>
-
   </div>
 
-  <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js"
-    integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN"
-    crossorigin="anonymous"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js"
-    integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q"
-    crossorigin="anonymous"></script>
-  <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js"
-    integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl"
-    crossorigin="anonymous"></script>
   <script src="js/vue.js"></script>
   <script src="js/app.js"></script>
-
 </body>
 
 </html>
