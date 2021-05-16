@@ -6,12 +6,16 @@ import (
 
 	"github.com/suvrick/go-kiss-server/game/parser"
 	"github.com/suvrick/go-kiss-server/until"
+	"gorm.io/gorm"
 )
 
 type ServerLoginResult byte
 
 // Bot ...
 type Bot struct {
+	gorm.Model
+
+	//BotID int `gorm:"primaryKey, autoIncrement:true"`
 	//
 	// UserID ower bot
 	//
@@ -64,8 +68,12 @@ type Bot struct {
 
 	//
 	// Logger - массив записей
-	//
-	Logger []string `gorm:"-"`
+	// `gorm:"type:text"`
+	// `gorm:"foreignKey:LineID"`
+	// PRELOAD:true
+	// `gorm:"foreignKey:line_id, auto_preload:true"`
+	//`gorm:"auto_preload:true"`
+	Logger []LoggerLine
 
 	//
 	// Login - структура для авторизации на сервере. SocialCode - тип фрейма.
@@ -90,7 +98,7 @@ func NewBot(url string) *Bot {
 		BonusDay: 0,
 
 		LoginParams: *parser.NewLoginParams(url),
-		Logger:      make([]string, 0),
+		Logger:      make([]LoggerLine, 0),
 		LastUseDay:  time.Now().Format(until.TIME_FORMAT),
 	}
 
@@ -121,7 +129,7 @@ func NewBotWhitProxy(url string, proxy string) *Bot {
 
 		LoginParams: *parser.NewLoginParams(url),
 
-		Logger: make([]string, 0),
+		Logger: make([]LoggerLine, 0),
 	}
 
 	if bot.SocialCode == 255 {
@@ -178,5 +186,7 @@ func (bot *Bot) Log(t LogType, methodName, msg string) {
 	}
 
 	fmt.Println(msg)
-	bot.Logger = append(bot.Logger, msg)
+	bot.Logger = append(bot.Logger, LoggerLine{
+		Line: msg,
+	})
 }

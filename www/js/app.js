@@ -47,6 +47,10 @@ var app = new Vue({
         },
         updateSelectedBots: function() {
             console.log(this.selectedBots)
+            for (let i = 0; i < this.selectedBots.length; i++) {
+                const b = this.selectedBots[i];
+                this.updateBot(b.UID)
+            }
         },
         deleteBotsHandle(){
            for (let i = 0; i < this.selectedBots.length; i++) {
@@ -56,10 +60,15 @@ var app = new Vue({
         },
         addBotClick: function(){
 
+            var m = document.getElementById("botAddDialogClose")
+            m.click();
+
+            console.log(m)
+            
             if (this.frameUrl === ''){
                 return
             }
-            
+
             this.addBot(this.frameUrl)
             this.frameUrl = '';
             this.showAlert("adding new bot")
@@ -137,6 +146,21 @@ var app = new Vue({
                 await this.getAllBots();
             }
         },
+
+        updateBot: async function(botID){
+            var result = await this.getFetchData("/bots/update/"+ botID, "GET")
+
+            if (result.code === 200) {
+
+                if (result.error){
+                    this.showAlert(result.error)
+                    return
+                }
+
+                await this.getAllBots();
+            }
+        },
+
 
         removeBot: async function(botID){
             var result = await this.getFetchData("/bots/remove/"+ botID, "GET")
@@ -272,11 +296,10 @@ var app = new Vue({
 
         showAlert: function(msg){
 
-            this.toastMsg = msg;
-
-            var el = document.querySelector('#toast')
-            var toast =  new window.bootstrap.Toast(el, { delay: 5000, autohide: true })
-            toast.show();
+            // this.toastMsg = msg;
+            // var el = document.querySelector('#toast')
+            // var toast =  new window.bootstrap.Toast(el, { delay: 5000, autohide: true })
+            // toast.show();
         },
 
         loadFromFile: async function() {

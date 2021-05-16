@@ -28,6 +28,7 @@ func NewBotController(r *gin.Engine, b_service *services.BotService, u_service *
 	{
 		bots.GET("/all", ctrl.allHandler)
 		bots.POST("/add", ctrl.addHandler)
+		bots.GET("/update/:botID", ctrl.updateHandler)
 		bots.GET("/remove/:botID", ctrl.removeHandler)
 	}
 
@@ -45,8 +46,20 @@ func (ctrl *BotController) addHandler(c *gin.Context) {
 		return
 	}
 
+	// urls := strings.Split(data.URL, "\n")
+
 	bot, err := ctrl.botService.Add(c, data.URL)
 
+	until.WriteResponse(c, 200, gin.H{
+		"bot": bot,
+	}, err)
+
+}
+
+func (ctrl *BotController) updateHandler(c *gin.Context) {
+
+	botUID := c.Param("botID")
+	bot, err := ctrl.botService.UpdateByID(c, botUID)
 	until.WriteResponse(c, 200, gin.H{
 		"bot": bot,
 	}, err)

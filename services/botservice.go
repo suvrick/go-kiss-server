@@ -71,6 +71,22 @@ func (s *BotService) Add(c *gin.Context, url string) (*models.Bot, error) {
 	return bot, nil
 }
 
+func (s *BotService) UpdateByID(c *gin.Context, id string) (*models.Bot, error) {
+	user := session.GetUser(c)
+	bot, err := s.botRepository.Find(id, user.ID)
+
+	if err != nil {
+		return nil, err
+	}
+
+	gs := ws.NewSocket(&bot)
+	gs.Go()
+
+	err = s.botRepository.Update(bot)
+
+	return &bot, err
+}
+
 // UpdateBot ...
 func (s *BotService) UpdateBot(bot models.Bot) {
 	s.botRepository.Update(bot)

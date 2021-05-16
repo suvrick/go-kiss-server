@@ -97,7 +97,7 @@ func (gs *GameSock) gameListRewardsReceive(msg io.Reader) int32 {
 		}
 	}
 
-	fmt.Println(rewardsList.Json)
+	//fmt.Println(rewardsList.Json)
 
 	gs.bot.LogINFO("GameRewardsListServerPacket", fmt.Sprintf("id: %v, count: %v, captions: %v", result.ID, result.Content, result.Captions.Ru))
 	return rewardsList.ID
@@ -132,7 +132,7 @@ func (gs *GameSock) balanceReceive(msg io.Reader) {
 
 	gs.bot.LogINFO("BalanceServerPacket", "Try parse server packet")
 
-	fmt.Println(msg)
+	//fmt.Println(msg)
 
 	balance := server.BalanceServerPacket{}
 

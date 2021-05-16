@@ -38,7 +38,7 @@ func NewSocket(b *models.Bot) *GameSock {
 		client: nil,
 		msgID:  0,
 		bot:    b,
-		debug:  true,
+		debug:  false,
 	}
 
 	return gs
@@ -73,8 +73,6 @@ func (gs *GameSock) Go() {
 func (gs *GameSock) connect() error {
 
 	dialer := wss.Dialer{}
-
-	//if gs.bot.Proxy != nil {
 	dialer = wss.Dialer{
 		Proxy: http.ProxyURL(&url.URL{
 			Scheme: "http",
@@ -83,7 +81,6 @@ func (gs *GameSock) connect() error {
 		}),
 		HandshakeTimeout: (time.Second * 60),
 	}
-	//}
 
 	con, _, err := dialer.Dial(host, nil)
 

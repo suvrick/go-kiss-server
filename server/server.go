@@ -49,7 +49,7 @@ func Start(config *Config) error {
 
 	controllers.NewAdminController(router, userService)
 
-	taskServer := tasks.NewTaskManager(userService, botService)
+	taskServer := tasks.NewTaskManager(10, userService, botService)
 	go taskServer.Run()
 
 	return http.ListenAndServeTLS(":443", "../certs/cert.crt", "../certs/pk.key", router)
@@ -70,6 +70,8 @@ func createDB(dbURL string) (*gorm.DB, error) {
 	db.AutoMigrate(&model.User{})
 	db.AutoMigrate(&models.Bot{})
 	db.AutoMigrate(&model.Proxy{})
+
+	db.AutoMigrate(&models.LoggerLine{})
 
 	return db, err
 }

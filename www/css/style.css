@@ -11,6 +11,11 @@ body {
     font-family: 'PT Sans Narrow';
 }
 
+.modal-title {
+    font-size: 2rem;
+    text-transform: uppercase;
+}
+
 #app {
     max-width: 900px;
     margin: auto;

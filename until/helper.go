@@ -38,3 +38,22 @@ func GetMD5Hash(login, password string) string {
 	hash := md5.Sum([]byte(login + password + time.Now().String()))
 	return hex.EncodeToString(hash[:])
 }
+
+//type MultiString []string
+
+// func (s MultiString) GormDataType() string {
+// 	// result := ""
+// 	// for _, v := range s {
+// 	// 	result += v
+// 	// }
+// 	return "text"
+// }
+
+// func (s MultiString) GormDBDataType(db *gorm.DB, field *schema.Field) string {
+// 	fmt.Println(db.Dialector.Name())
+// 	switch db.Dialector.Name() {
+// 	case "mysql", "sqlite", "postgres":
+// 		return "text"
+// 	}
+// 	return ""
+// }

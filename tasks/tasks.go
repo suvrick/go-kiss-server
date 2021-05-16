@@ -12,22 +12,24 @@ import (
 type TaskManager struct {
 	userService *services.UserService
 	botService  *services.BotService
+	delay       uint64
 }
 
-func NewTaskManager(us *services.UserService, bs *services.BotService) *TaskManager {
+func NewTaskManager(delay uint64, us *services.UserService, bs *services.BotService) *TaskManager {
 	return &TaskManager{
 		userService: us,
 		botService:  bs,
+		delay:       delay,
 	}
 }
 
 func (t *TaskManager) Run() {
+	fmt.Println(">>>>>>>>> Init task manager")
 
 	for {
+		time.Sleep(time.Minute * time.Duration(t.delay))
 
-		time.Sleep(time.Minute * 5)
-
-		fmt.Println("Start task manager")
+		fmt.Println(">>>>>>>>> Start loop tasks")
 
 		users, err := t.userService.AllUser()
 
@@ -36,13 +38,14 @@ func (t *TaskManager) Run() {
 		}
 
 		for _, u := range users {
-			fmt.Printf("Get userID %v\n", u.ID)
+			fmt.Printf(">>>>>>>>> Get userID %v\n", u.ID)
 			bots, err := t.botService.AllByUserID(u.ID)
 
 			if err != nil {
 				continue
 			}
 
+			fmt.Printf(">>>>>>>>> Get bots %v\n", len(bots))
 			for _, b := range bots {
 				t.Do(b)
 				t.botService.UpdateBot(*b)
