@@ -28,43 +28,44 @@
       <div class="row">
         <header class="p-3 mb-3 border-bottom">
           <div class="container">
-            <div id="appTabBtns"
-              class="d-flex flex-wrap align-items-center justify-content-center justify-content-lg-start">
+            <div id="appTabBtns" class="d-flex flex-wrap align-items-center justify-content-between">
               <a href="/" class="d-flex align-items-center mb-2 mb-lg-0 text-dark text-decoration-none">
                 <img src="./css/logov2.png" class="bi me-2" width="60" height="40">
               </a>
 
-              <ul class="nav col-12 col-lg-auto me-lg-auto mb-2 justify-content-center mb-md-0">
-                <li>
-                  <a class="visually-hidden" id="tabLoginBtn" data-bs-toggle="pill" data-bs-target="#tabLoginContent"
-                    type="button" role="tab">
-                    Логин
-                  </a>
-                </li>
-                <li><a class="visually-hidden" id="tabRegisterBtn" data-bs-toggle="pill"
-                    data-bs-target="#tabRegisterContent" type="button" role="tab">Регистрация</a></li>
-                <li><a class="visually-hidden" id="tabProfileBtn" v-if="self" data-bs-toggle="pill"
-                    data-bs-target="#tabProfileContent" type="button" role="tab">Профиль</a></li>
-                <li><a class="nav-link px-2 link-dark" id="tabHomeBtn" v-if="self" data-bs-toggle="pill"
-                    data-bs-target="#tabHomeContent" type="button" role="tab">Главная</a></li>
-                <li><a class="nav-link px-2 link-dark" id="tabUsersBtn" data-bs-toggle="pill"
-                    v-if="self?.role === 'admin'" data-bs-target="#tabUsersContent" type="button"
-                    role="tab">Аккаунты</a></li>
-              </ul>
-
-
-              <div v-if="self" class="dropdown text-end">
-                <a href="#" class="d-block link-dark text-decoration-none dropdown-toggle" id="dropdownUser1"
-                  data-bs-toggle="dropdown" aria-expanded="false">
-                  {{ self.email }}
-                </a>
-
-                <!-- Example split danger button -->
-
-                <ul class="dropdown-menu text-small" aria-labelledby="dropdownUser1">
-                  <li><a @click="navTab('tabProfileBtn')" class="dropdown-item">Profile</a></li>
-                  <li><a @click="logout()" class="dropdown-item" href="#">Выйти</a></li>
+              <div class="d-flex align-items-center justify-content-end">
+                <ul class="nav col-12 col-lg-auto me-lg-auto mb-2 justify-content-center mb-md-0">
+                  <li>
+                    <a class="visually-hidden" id="tabLoginBtn" data-bs-toggle="pill" data-bs-target="#tabLoginContent"
+                      type="button" role="tab">
+                      Логин
+                    </a>
+                  </li>
+                  <li><a class="visually-hidden" id="tabRegisterBtn" data-bs-toggle="pill"
+                      data-bs-target="#tabRegisterContent" type="button" role="tab">Регистрация</a></li>
+                  <li><a class="visually-hidden" id="tabProfileBtn" v-if="self" data-bs-toggle="pill"
+                      data-bs-target="#tabProfileContent" type="button" role="tab">Профиль</a></li>
+                  <li><a class="nav-link px-2 link-dark" id="tabHomeBtn" v-if="self" data-bs-toggle="pill"
+                      data-bs-target="#tabHomeContent" type="button" role="tab">Главная</a></li>
+                  <li><a class="nav-link px-2 link-dark" id="tabUsersBtn" data-bs-toggle="pill"
+                      v-if="self?.role === 'admin'" data-bs-target="#tabUsersContent" type="button"
+                      role="tab">Аккаунты</a></li>
                 </ul>
+  
+  
+                <div v-if="self" class="dropdown text-end">
+                  <a href="#" class="d-block link-dark text-decoration-none dropdown-toggle" id="dropdownUser1"
+                    data-bs-toggle="dropdown" aria-expanded="false">
+                    {{ self.email }}
+                  </a>
+  
+                  <!-- Example split danger button -->
+  
+                  <ul class="dropdown-menu text-small" aria-labelledby="dropdownUser1">
+                    <li><a @click="navTab('tabProfileBtn')" class="dropdown-item">Profile</a></li>
+                    <li><a @click="logout()" class="dropdown-item" href="#">Выйти</a></li>
+                  </ul>
+                </div>
               </div>
             </div>
           </div>
@@ -76,12 +77,12 @@
 
           <!-- BOTS -->
           <div class="tab-pane fade show active" id="tabHomeContent" role="tabpanel">
-            <h2 class="pageTitle">
-              Боты
-            </h2>
+           
 
             <div class="cards">
-              <!-- <img class="imgState" src="https://img.icons8.com/clouds/96/000000/bullish.png" /> -->
+              <h2 class="pageTitle">
+                Боты
+              </h2>
 
               <div v-if="self" class="state-card">
                 <div class="card-body">
@@ -124,18 +125,18 @@
 
               <div class="btnsTable">
                 <div class="btn-group" role="group">
-                  <button type="button" class="btn btn-light" data-bs-toggle="modal" data-bs-target="#addBotDialog"  >
+                  <button title="Добавить бот" type="button" class="btn btn-light" data-bs-toggle="modal" data-bs-target="#addBotDialog"  >
                     <img src="./css/folder.svg" />
                   </button>
-                  <button :disabled="selectedBots.length === 0" type="button" @click="updateSelectedBots"
+                  <button title="Обновить" v-if="self?.role === 'admin'" :disabled="selectedBots.length === 0" type="button" @click="updateSelectedBots"
                     class="btn btn-light">
                     <img src="./css/reload.svg" />
                   </button>
-                  <button :disabled="false" type="button" data-toggle="modal" data-target="#exampleModal"
+                  <button  title="Добавить задачу" :disabled="selectedBots.length === 0" type="button" data-bs-toggle="modal" data-bs-target="#addTaskDialog" 
                     class="btn btn-light">
                     <img src="./css/tasks.svg" />
                   </button>
-                  <button :disabled="selectedBots.length === 0" @click="deleteBotsHandle()" type="button"
+                  <button title="Удалить" :disabled="selectedBots.length === 0" @click="deleteBotsHandle()" type="button"
                     class="btn btn-light">
                     <img src="./css/trash.svg" />
                   </button>
@@ -164,7 +165,7 @@
                   <td scope="row">{{ (botsContainerStep * 5) + i + 1 }}</td>
                   <td class="w-50">
                     <b>
-                      {{ bot.Name === "" ? "asdadads" : bot.Name }}
+                      {{ bot.Name === "" ? "asdadads" : bot.Name }} | {{ bot.UID }}
                     </b>
                   </td>
                   <td>{{ bot.Result === "" ? "need update" : bot.Result }}</td>
@@ -346,30 +347,72 @@
             </div>
           </div>
 
-          <!--DIALOG ADD BOT -->
-          <div class="modal fade" id="addBotDialog" data-bs-backdrop="static" data-bs-keyboard="false"
+          <!--DIALOG ADD TASK -->
+          <div class="modal fade" id="addTaskDialog" data-bs-backdrop="static" data-bs-keyboard="false"
             tabindex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">
             <div class="modal-dialog">
               <div class="modal-content">
                 <div class="modal-header">
-                  <h5 class="modal-title" id="exampleModalLabel">New bot</h5>
-                  <button type="button" id="botAddDialogClose" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                  <h5 class="modal-title" id="exampleModalLabel">New task</h5>
+                  <button type="button" id="taskAddDialogClose" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body">
-                  <div class="form-group">
-                    <label for="frameUrlID">Ссылка на фрейм</label>
-                    <input v-model="frameUrl" type="email" class="form-control" id="frameUrlID" placeholder="">
-                  </div>
+                  <form>
+                    <fieldset>
+                      <legend>Создания новой задачи</legend>
+                      <div class="mb-3">
+                        <label for="disabledTextInput" class="form-label">player ID</label>
+                        <input type="text" id="disabledTextInput" class="form-control" placeholder="id">
+                      </div>
+                      <div class="mb-3">
+                        <label for="disabledSelect" class="form-label">Выбор задачи</label>
+                        <select id="disabledSelect" class="form-select">
+                          <option>Отправить Розу</option>
+                          <option>Отправить Розу (FREE)</option>
+                          <option>Отправить Сердечко</option>
+                          <option>Отправить Сердечко (FREE)</option>
+                        </select>
+                      </div>
+                      <div class="mb-3">
+                        <label for="disabledTextInput" class="form-label">Кол-во</label>
+                        <input type="text" id="disabledTextInput" class="form-control" placeholder="1">
+                      </div>
+                    </fieldset>
+                  </form>
                 </div>
                 <div class="modal-footer">
-                  <button type="button" @click="addBotClick()" :disabled="frameUrl === ''" class="btn btn-primary w-100">
-                    GO
+                  <button type="button" @click="addTaskClick()" class="btn btn-primary w-100">
+                    Создать
                   </button>
                 </div>
               </div>
             </div>
           </div>
           
+          <!--DIALOG ADD BOT -->
+          <div class="modal fade" id="addBotDialog" data-bs-backdrop="static" data-bs-keyboard="false"
+          tabindex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">
+          <div class="modal-dialog">
+            <div class="modal-content">
+              <div class="modal-header">
+                <h5 class="modal-title" id="exampleModalLabel">New bot</h5>
+                <button type="button" id="botAddDialogClose" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+              </div>
+              <div class="modal-body">
+                <div class="form-group">
+                  <label for="frameUrlID">Ссылка на фрейм</label>
+                  <input v-model="frameUrl" type="email" class="form-control" id="frameUrlID" placeholder="">
+                </div>
+              </div>
+              <div class="modal-footer">
+                <button type="button" @click="addBotClick()" :disabled="frameUrl === ''" class="btn btn-primary w-100">
+                  GO
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+
         </div>
 
       </div>

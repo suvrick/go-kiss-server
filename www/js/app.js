@@ -73,6 +73,14 @@ var app = new Vue({
             this.frameUrl = '';
             this.showAlert("adding new bot")
         },
+        addTaskClick: function(){
+
+            var m = document.getElementById("taskAddDialogClose")
+            m.click();
+
+            console.log(m)
+        
+        },
         toggleRow: function(bot){
             console.log(bot)
         },
@@ -92,7 +100,17 @@ var app = new Vue({
         getAllBots: async function () {
             var result = await this.getFetchData("bots/all", "GET")
             if (result.code === 200) {
-                this.bots = result.data.bots
+                this.bots = result.data.bots.sort(function (a, b) {
+                    if (a.UID > b.UID) {
+                      return 1;
+                    }
+                    if (a.UID < b.UID) {
+                      return -1;
+                    }
+                    // a должно быть равным b
+                    return 0;
+                  });
+
                 this.updateBotsContainer()
             }
         },
