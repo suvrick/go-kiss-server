@@ -78,11 +78,12 @@
           <!-- BOTS -->
           <div class="tab-pane fade show active" id="tabHomeContent" role="tabpanel">
            
+            <!-- <h2 class="pageTitle">
+              Боты
+            </h2> -->
 
-            <div class="cards">
-              <h2 class="pageTitle">
-                Боты
-              </h2>
+            <div class="d-flex flex-column flex-md-row justify-content-sm-end cards">
+
 
               <div v-if="self" class="state-card">
                 <div class="card-body">
@@ -152,8 +153,8 @@
                   <th scope="col">Ник</th>
                   <th scope="col">Статус</th>
                   <th scope="col">Баланс</th>
-                  <th scope="col">Бонус день</th>
-                  <th scope="col">Дата</th>
+                  <th scope="col">Бонус(д)</th>
+                  <th class="d-none d-md-table-cell" scope="col">Дата</th>
                 </tr>
               </thead>
               <tbody>
@@ -164,17 +165,32 @@
                   </td>
                   <td scope="row">{{ (botsContainerStep * 5) + i + 1 }}</td>
                   <td class="w-50">
-                    <b>
                       {{ bot.Name === "" ? "asdadads" : bot.Name }} | {{ bot.UID }}
-                    </b>
                   </td>
                   <td>{{ bot.Result === "" ? "need update" : bot.Result }}</td>
                   <td>{{ bot.Balance }}</td>
-                  <td>{{ 0 }}</td>
-                  <td>{{ bot.LastUseDay === "" ? new Date().toLocaleDateString() : bot.LastUseDay }}</td>
+                  <td>{{ bot.BonusDay }}</td>
+                  <td class="d-none d-md-table-cell">{{ bot.LastUseDay === "" ? new Date().toLocaleDateString() : bot.LastUseDay }}</td>
                 </tr>
 
               </tbody>
+              <tfoot class="bg-hith bg-light bg-gradient">
+                <tr>
+                  <th></th>
+                  <th>
+                    <b>
+                      {{ bots.length }}
+                    </b>
+                  </th>
+                  <th></th>
+                  <th></th>
+                  <th>
+                    <b>{{ bots.reduce( (a, b) => a + b.Balance, 0) }}</b>
+                  </th>
+                  <th></th>
+                  <th class="d-none d-md-table-cell"></th>
+                </tr>
+              </tfoot>
             </table>
             <div v-if="botsContainer.length === 0" class="w-100">
               <p class="form-text empty-table">
