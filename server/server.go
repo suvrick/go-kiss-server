@@ -28,6 +28,8 @@ func Start(config *Config) error {
 	router := gin.Default()
 
 	router.StaticFile("/", "./www/index.html")
+	router.StaticFile("/login", "./www/login.html")
+
 	router.StaticFile("autokiss.zip", "./www/autokiss/autokiss.zip")
 	router.Static("bootstrap", "./www/bootstrap")
 	router.Static("css", "./www/css")
