@@ -24,28 +24,28 @@ func (r *UserRepository) Create(u model.User) (int, error) {
 }
 
 // UpdateUser ...
-func (r *UserRepository) UpdateUser(user model.User) error {
-	return r.db.Save(&user).Error
+func (r *UserRepository) UpdateUser(user *model.User) error {
+	return r.db.Save(user).Error
 }
 
 // FindByToken ...
-func (r *UserRepository) FindByToken(key string) (model.User, error) {
-	user := model.User{}
-	result := r.db.Table("users").Where("token = ?", key).First(&user)
+func (r *UserRepository) FindByToken(key string) (*model.User, error) {
+	user := &model.User{}
+	result := r.db.Table("users").Where("token = ?", key).First(user)
 	return user, result.Error
 }
 
 // FindByID ...
-func (r *UserRepository) FindByID(userID int) (model.User, error) {
-	user := model.User{}
-	result := r.db.Table("users").Where("id = ?", userID).First(&user)
+func (r *UserRepository) FindByID(userID int) (*model.User, error) {
+	user := &model.User{}
+	result := r.db.Table("users").Where("id = ?", userID).First(user)
 	return user, result.Error
 }
 
 // FindByEmailAndPass ...
-func (r *UserRepository) FindByEmailAndPass(email, password string) (model.User, error) {
-	user := model.User{}
-	result := r.db.Table("users").Where("email = ? AND password = ?", email, password).First(&user)
+func (r *UserRepository) FindByEmailAndPass(email, password string) (*model.User, error) {
+	user := &model.User{}
+	result := r.db.Table("users").Where("email = ? AND password = ?", email, password).First(user)
 	return user, result.Error
 }
 

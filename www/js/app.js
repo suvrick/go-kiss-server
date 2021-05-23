@@ -7,29 +7,13 @@ var app = new Vue({
 
         frameUrl: "",
 
-        email: "",
-        password: "",
-        msgAuthError: "",
-
-        emailReg: "",
-        passwordReg: "",
-        passwordReg2: "",
-        msgRegError: "",
-
         bots: [],
         botsContainer: [],
         botsContainerStep: 0,
 
         selectedBots: [],
         selectAllFlag: false,
-        
-        proxies: [],
-        proxiesContainer: [],
-        proxiesContainerStep: 0,
-
-        users: [],
-        usersContainer: [],
-        usersContainerStep: 0,
+    
 
         toastMsg: "",
         progress: true
@@ -84,19 +68,6 @@ var app = new Vue({
         toggleRow: function(bot){
             console.log(bot)
         },
-        navTab: function(id){
-            var triggerEl = document.querySelector('#' + id)
-            var tab = new window.bootstrap.Tab(triggerEl)
-            tab.show()
-        },
-
-        getAllUsers: async function(){
-            var result = await this.getFetchData("admin/botovod/all", "GET")
-            if (result.code === 200) {
-                this.users = result.data.users
-                this.updateUsersContainer();
-            }
-        },
         getAllBots: async function () {
             var result = await this.getFetchData("bots/all", "GET")
             if (result.code === 200) {
@@ -133,25 +104,6 @@ var app = new Vue({
             this.botsContainerStep += step;
             this.updateBotsContainer();
         },
-        updateUsersContainer: function(){
-            var start = (this.usersContainerStep * 5)
-            var end = (this.usersContainerStep * 5) + 5
-            this.usersContainer = this.users.slice(start, end)
-        },
-        updateUsersContainerStep: function(step){
-            if(this.usersContainerStep === 0 && step === -1){
-                return;
-            }
-
-            if(this.usersContainerStep * 5 - 5 > this.users.length && step === 1){
-                return;
-            }
-
-
-            this.usersContainerStep += step;
-            this.updateUsersContainer();
-        },
-
         addBot: async function(url) {
             var result = await this.getFetchData("/bots/add", "POST", { url: url} )
             if (result.code === 200 ) {
@@ -164,7 +116,6 @@ var app = new Vue({
                 await this.getAllBots();
             }
         },
-
         updateBot: async function(botID){
             var result = await this.getFetchData("/bots/update/"+ botID, "GET")
 
@@ -178,8 +129,6 @@ var app = new Vue({
                 await this.getAllBots();
             }
         },
-
-
         removeBot: async function(botID){
             var result = await this.getFetchData("/bots/remove/"+ botID, "GET")
 
@@ -193,7 +142,6 @@ var app = new Vue({
                 await this.getAllBots();
             }
         },
-
         getSelf: async function () {
             var result = await this.getFetchData("/user/get", "GET")
             if (result.code === 200) {
@@ -205,13 +153,6 @@ var app = new Vue({
                 }
 
                 this.self = result.data.user
-
-                if(this.self.role === 'admin'){
-                    //this.getAllProxies();
-                    this.getAllUsers();
-                }
-
-                this.getAllBots()
             }
         },
         onLogin: async function(){
@@ -277,7 +218,7 @@ var app = new Vue({
             }
         },
         logout: async function(){
-            await this.getFetchData("/user/logout", "GET")
+            await this.getFetchData("/logout", "GET")
             window.location.href = '/'
         },
 
@@ -299,11 +240,11 @@ var app = new Vue({
 
             switch(result?.code){
                 case 401 :
-                    this.navTab('tabLoginBtn')
+                    window.location.href = '/login'
                     return result;
                 case 403 :
                     //No Forbidden
-                    this.navTab('tabLoginBtn')
+                    window.location.href = '/login'
                     return result;
                 default:
                     return result
@@ -314,10 +255,10 @@ var app = new Vue({
 
         showAlert: function(msg){
 
-            // this.toastMsg = msg;
-            // var el = document.querySelector('#toast')
-            // var toast =  new window.bootstrap.Toast(el, { delay: 5000, autohide: true })
-            // toast.show();
+            this.toastMsg = msg;
+            var el = document.querySelector('#toast')
+            var toast =  new window.bootstrap.Toast(el, { delay: 5000, autohide: true })
+            toast.show();
         },
 
         loadFromFile: async function() {
@@ -339,8 +280,8 @@ var app = new Vue({
         }
     },
 
-    created: function () {    
-        
+    created: function () {        
         this.getSelf()
+        this.getAllBots()
     }
 })

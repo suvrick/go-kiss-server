@@ -2,7 +2,6 @@ package server
 
 import (
 	"log"
-	"net/http"
 
 	"github.com/suvrick/go-kiss-server/controllers"
 	"github.com/suvrick/go-kiss-server/game/models"
@@ -27,6 +26,28 @@ func Start(config *Config) error {
 
 	router := gin.Default()
 
+	setStaticFile(router)
+
+	userRepo := repositories.NewUserRepository(db)
+	botRepo := repositories.NewBotRepository(db)
+
+	session.SetDb(userRepo)
+
+	userService := services.NewUserService(userRepo)
+	botService := services.NewBotService(botRepo, userService)
+
+	controllers.NewUserController(router, userService)
+	controllers.NewBotController(router, botService, userService)
+	controllers.NewAdminController(router, userService)
+
+	taskServer := tasks.NewTaskManager(60*6, userService, botService)
+	go taskServer.Run()
+
+	//return http.ListenAndServeTLS(":443", "../certs/cert.crt", "../certs/pk.key", router)
+	return router.Run(config.BindAddr)
+}
+
+func setStaticFile(router *gin.Engine) {
 	router.StaticFile("/", "./www/index.html")
 	router.StaticFile("/login", "./www/login.html")
 
@@ -34,28 +55,6 @@ func Start(config *Config) error {
 	router.Static("bootstrap", "./www/bootstrap")
 	router.Static("css", "./www/css")
 	router.Static("js", "./www/js")
-
-	userRepo := repositories.NewUserRepository(db)
-	proxyRepo := repositories.NewProxyRepository(db)
-	botRepo := repositories.NewBotRepository(db)
-
-	session.SetDb(userRepo)
-
-	userService := services.NewUserService(userRepo)
-	proxyService := services.NewProxyService(proxyRepo)
-	botService := services.NewBotService(botRepo, userService, proxyService)
-
-	controllers.NewUserController(router, userService)
-	controllers.NewBotController(router, botService, userService)
-	controllers.NewProxyController(router, proxyService)
-
-	controllers.NewAdminController(router, userService)
-
-	taskServer := tasks.NewTaskManager(60*6, userService, botService)
-	go taskServer.Run()
-
-	return http.ListenAndServeTLS(":443", "../certs/cert.crt", "../certs/pk.key", router)
-	//return router.Run(config.BindAddr)
 }
 
 func createDB(dbURL string) (*gorm.DB, error) {
@@ -71,8 +70,6 @@ func createDB(dbURL string) (*gorm.DB, error) {
 	// Migrate the schema
 	db.AutoMigrate(&model.User{})
 	db.AutoMigrate(&models.Bot{})
-	db.AutoMigrate(&model.Proxy{})
-
 	db.AutoMigrate(&models.LoggerLine{})
 
 	return db, err

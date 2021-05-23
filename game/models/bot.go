@@ -11,6 +11,13 @@ import (
 
 type ServerLoginResult byte
 
+type LoggerLine struct {
+	gorm.Model
+	BotID uint
+	Line  string
+}
+
+
 // Bot ...
 type Bot struct {
 	gorm.Model
@@ -145,7 +152,7 @@ func NewBotWhitProxy(url string, proxy string) *Bot {
 
 // ToString ...
 func (bot *Bot) ToString() string {
-	return fmt.Sprintf("Bot:\n Name: %v\n InnerID:  %v\n Balance: %v\n Result: %v\n IsBonus: %v\n Bonus: %v\n Avatar: %v\n Profile: %v\n LoginParams:\n Social: %v\n LoginID: %v\n Token: %v\n Token2:%v\n",
+	return fmt.Sprintf("Bot:\n Name: %v\n InnerID:  %v\n Balance: %v\n Result: %v\n IsBonus: %v\n Bonus: %v\n Avatar: %v\n Profile: %v\n\nLoginParams:\n Social: %v\n LoginID: %v\n Token: %v\n Token2:%v\n",
 		bot.Name,
 		bot.InnerID,
 		bot.Balance,

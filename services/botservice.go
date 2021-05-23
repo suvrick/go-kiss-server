@@ -17,17 +17,15 @@ import (
 // BotService ...
 type BotService struct {
 	userService   *UserService
-	proxyService  *ProxyService
 	botRepository *repositories.BotRepository
 
 	locker *sync.Mutex
 }
 
 // NewBotService ...
-func NewBotService(repo *repositories.BotRepository, us *UserService, ps *ProxyService) *BotService {
+func NewBotService(repo *repositories.BotRepository, us *UserService) *BotService {
 	return &BotService{
 		userService:   us,
-		proxyService:  ps,
 		botRepository: repo,
 
 		locker: &sync.Mutex{},
@@ -40,7 +38,7 @@ func (s *BotService) Add(c *gin.Context, url string) (*models.Bot, error) {
 	s.locker.Lock()
 	defer s.locker.Unlock()
 
-	user := *session.GetUser(c)
+	user := session.GetUser(c)
 
 	if err := s.checkActualUser(user); err != nil {
 		return nil, err
@@ -109,7 +107,7 @@ func (s *BotService) Delete(c *gin.Context) error {
 	s.locker.Lock()
 	defer s.locker.Unlock()
 
-	user := *session.GetUser(c)
+	user := session.GetUser(c)
 	if user.ID == 0 {
 		return errors.ErrNotAuthenticated
 	}
@@ -133,7 +131,7 @@ func (s *BotService) Delete(c *gin.Context) error {
 }
 
 // CheckActualUser ...
-func (s *BotService) checkActualUser(user model.User) error {
+func (s *BotService) checkActualUser(user *model.User) error {
 
 	userDate, _ := time.Parse(until.TIME_FORMAT, user.Date)
 	nowDate := time.Now()

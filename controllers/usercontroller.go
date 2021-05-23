@@ -18,18 +18,35 @@ type UserController struct {
 	userService *services.UserService
 }
 
+/*
+
+
+
+	HTTP Status code:
+	200 - OK
+	400 - BadRequest
+	401 - Unauthorized
+	403 - Not Forbidden
+
+
+
+
+*/
+
 // NewUserController ...
-func NewUserController(r *gin.Engine, u_service *services.UserService) {
+func NewUserController(r *gin.Engine, uService *services.UserService) {
 
 	ctrl := &UserController{
 		router:      r,
-		userService: u_service,
+		userService: uService,
 	}
+
+	ctrl.router.GET("/logout", ctrl.logoutHandler)
 
 	user := ctrl.router.Group("/user")
 	{
-		user.POST("/login", ctrl.loginHandler)
 		user.GET("/logout", ctrl.logoutHandler)
+		user.POST("/login", ctrl.loginHandler)
 		user.POST("/register", ctrl.registerHandler)
 	}
 
@@ -50,14 +67,14 @@ func (ctrl *UserController) registerHandler(c *gin.Context) {
 	data := FormData{}
 
 	if err := c.ShouldBindJSON(&data); err != nil {
-		until.WriteResponse(c, 403, gin.H{
+		until.WriteResponse(c, 400, gin.H{
 			"result": "fail",
 		}, errors.ErrInvalidParam)
 		return
 	}
 
 	if len(data.Email) == 0 || len(data.Password) == 0 {
-		until.WriteResponse(c, 403, gin.H{
+		until.WriteResponse(c, 400, gin.H{
 			"result": "fail",
 		}, errors.ErrInvalidParam)
 		return
@@ -66,7 +83,7 @@ func (ctrl *UserController) registerHandler(c *gin.Context) {
 	id, err := ctrl.userService.Register(data.Email, data.Password)
 
 	if err != nil {
-		until.WriteResponse(c, 403, gin.H{
+		until.WriteResponse(c, 401, gin.H{
 			"result": "fail",
 		}, errors.ErrIncorrectEmailOrPassword)
 		return
@@ -89,14 +106,14 @@ func (ctrl *UserController) loginHandler(c *gin.Context) {
 	data := FormData{}
 
 	if err := c.ShouldBindJSON(&data); err != nil {
-		until.WriteResponse(c, 403, gin.H{
+		until.WriteResponse(c, 400, gin.H{
 			"result": "fail",
 		}, errors.ErrInvalidParam)
 		return
 	}
 
 	if len(data.Email) == 0 || len(data.Password) == 0 {
-		until.WriteResponse(c, 403, gin.H{
+		until.WriteResponse(c, 400, gin.H{
 			"result": "fail",
 		}, errors.ErrInvalidParam)
 		return
@@ -105,14 +122,14 @@ func (ctrl *UserController) loginHandler(c *gin.Context) {
 	user, err := ctrl.userService.Login(data.Email, data.Password)
 
 	if err != nil {
-		until.WriteResponse(c, 403, gin.H{
+		until.WriteResponse(c, 401, gin.H{
 			"result": "fail",
 			"user":   user,
 		}, errors.ErrIncorrectEmailOrPassword)
 		return
 	}
 
-	user = ctrl.SetCookie(c, user)
+	ctrl.setCookie(c, user)
 
 	until.WriteResponse(c, 200, gin.H{
 		"result": "ok",
@@ -123,18 +140,21 @@ func (ctrl *UserController) loginHandler(c *gin.Context) {
 func (ctrl *UserController) logoutHandler(c *gin.Context) {
 
 	user := session.GetUser(c)
-
-	if user.ID == 0 {
-		until.WriteResponse(c, 403, gin.H{
-			"result": "fail",
-		}, errors.ErrNotAuthenticated)
+	if user == nil {
+		until.WriteResponse(c, 401, nil, nil)
+		return
 	}
 
-	ctrl.DeleteCookie(c, *user)
+	ctrl.deleteCookie(c, user)
+	if err := ctrl.userService.UpdateUser(user); err != nil {
+		//...
+	}
 
 	until.WriteResponse(c, 401, nil, nil)
 }
 
+// getUserHandler возращает текущего пользователя на ружу
+// TODO: перенести в wss ?
 func (ctrl *UserController) getUserHandler(c *gin.Context) {
 
 	user := session.GetUser(c)
@@ -144,20 +164,24 @@ func (ctrl *UserController) getUserHandler(c *gin.Context) {
 	}, nil)
 }
 
-func (ctrl *UserController) SetCookie(c *gin.Context, user model.User) model.User {
+func (ctrl *UserController) setCookie(c *gin.Context, user *model.User) {
 
+	//Ну тут приметивный хеш
 	user.Token = until.GetMD5Hash(user.Email, user.Password)
 
-	host := strings.Split(c.Request.Host, ":")[0]
+	host := strings.Split(c.Request.Host, ":")[0] //отрезаем порт (нужен для локалки)
 	c.SetCookie("token", user.Token, 60*60*30*24, "/", host, false, false)
 
-	ctrl.userService.UpdateUser(user)
-
-	return user
+	// TODO:Обработать ошибку
+	err := ctrl.userService.UpdateUser(user)
+	if err != nil {
+		return
+	}
 }
 
-func (ctrl *UserController) DeleteCookie(c *gin.Context, user model.User) {
+func (ctrl *UserController) deleteCookie(c *gin.Context, user *model.User) {
+	delete(session.Accounts, user.Token)
+	user.Token = ""
 	host := strings.Split(c.Request.Host, ":")[0]
 	c.SetCookie("token", user.Token, -1, "/", host, false, false)
-	delete(session.Accounts, user.Token)
 }

@@ -13,7 +13,7 @@ func AdminMiddleware() gin.HandlerFunc {
 	return func(c *gin.Context) {
 
 		u, _ := c.Get("user")
-		user := u.(model.User)
+		user := u.(*model.User)
 
 		if user.Role != "admin" {
 			until.WriteResponse(c, 403, nil, errors.New("not forbidden"))

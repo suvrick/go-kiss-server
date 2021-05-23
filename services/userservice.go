@@ -24,7 +24,7 @@ func NewUserService(repo *repositories.UserRepository) *UserService {
 	return s
 }
 
-func (s *UserService) Login(email, password string) (model.User, error) {
+func (s *UserService) Login(email, password string) (*model.User, error) {
 	return s.userRepo.FindByEmailAndPass(email, password)
 }
 
@@ -44,11 +44,11 @@ func (s *UserService) Register(email, password string) (int, error) {
 	return s.userRepo.Create(u)
 }
 
-func (s *UserService) FindUserByID(userID int) (model.User, error) {
+func (s *UserService) FindUserByID(userID int) (*model.User, error) {
 	return s.userRepo.FindByID(userID)
 }
 
-func (s *UserService) UpdateUser(user model.User) error {
+func (s *UserService) UpdateUser(user *model.User) error {
 	s.locker.Lock()
 	defer s.locker.Unlock()
 

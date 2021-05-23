@@ -117,3 +117,14 @@ header {
 .expend {
     padding: 20px;
 }
+
+.ml-15 {
+ margin-left: 15px;
+ flex-basis: 50px;
+}
+
+.footer {
+    position: fixed;
+    bottom: 0;
+    width: 100%;
+}

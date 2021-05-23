@@ -35,7 +35,7 @@
               <button onclick="onLogin()" class="btn btn-primary form-control">Войти</button>
               <div class="mt-3">
                 <label class="form-check-label px-2">Нет аккаунта?</label>
-                <a class="link" href="javascript:void()" onclick="toggleTab()">Регистрация</a>
+                <a class="link" href="javascript:()=>{}" onclick="toggleTab()">Регистрация</a>
               </div>
             </div>
 
@@ -57,7 +57,7 @@
               <button onclick="onRegister()" class="btn btn-primary form-control">Создать</button>
               <div class="mt-3">
                 <label class="form-check-label px-2">Есть аккаунт?</label>
-                <a class="link" href="javascript:void()" onclick="toggleTab()">Войти</a>
+                <a class="link" href="javascript:()=>{}" onclick="toggleTab()">Войти</a>
               </div>
             </div>
 
@@ -70,8 +70,8 @@
   <script>
 
     function toggleTab(){
-      loginContent.classList.toggle("d-none")
-      registerContent.classList.toggle("d-none")
+      document.getElementById('loginContent').classList.toggle("d-none")
+      document.getElementById('registerContent').classList.toggle("d-none")
     }
 
     async function onLogin(){
@@ -81,12 +81,12 @@
                 return;
             }
 
-            var data = { 
+            let data = {
                 email: loginEmail.value,
                 password: loginPassword.value
              }
 
-             var response = await fetch('/user/login', {
+             let response = await fetch('/user/login', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'
@@ -94,7 +94,7 @@
                 body: JSON.stringify(data)
             })
             
-            var result = await response.json();
+            let result = await response.json();
             msgAuthError.innerText = result?.error ?? '';
             
             switch(result?.code){

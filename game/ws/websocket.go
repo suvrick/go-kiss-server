@@ -21,7 +21,6 @@ type GameSock struct {
 	client         *wss.Conn
 	msgID          uint32
 	bot            *models.Bot
-	proxy          *models.Proxy
 	botChanUpdater chan *models.Bot
 
 	debug bool
@@ -42,10 +41,6 @@ func NewSocket(b *models.Bot) *GameSock {
 	}
 
 	return gs
-}
-
-func (gs *GameSock) SetProxy(p *models.Proxy) {
-	gs.proxy = p
 }
 
 // Go start game
