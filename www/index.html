@@ -76,7 +76,18 @@
             <span class="sr-only">Loading...</span>
           </div>
 
-          <div class="d-none d-md-flex justify-content-md-end shadow-sm bg-light">
+          <div class="p-2 d-flex justify-content-between">
+            <button @click="toggleSelected" title="Выделить всё" type="button" class="btn btn-light">
+              <img src="./css/select.svg" />
+            </button>
+            <button title="Добавить задачу" type="button" data-bs-toggle="modal"
+            data-bs-target="#addTaskDialog" class="btn btn-light shadow-sm bg-body rounded">
+            <img src="./css/tasks.svg" />
+            New task
+          </button>
+          </div>
+
+          <div v-if="false" class="d-none d-flex justify-content-md-end">
             <button title="Добавить бот" type="button" class="btn btn-light" data-bs-toggle="modal"
               data-bs-target="#addBotDialog">
               <img src="./css/folder.svg" />
@@ -89,6 +100,9 @@
               data-bs-target="#addTaskDialog" class="btn btn-light">
               <img src="./css/tasks.svg" />
             </button>
+            <button @click="toggleSelected" title="Выделить всё" type="button" class="btn btn-light">
+              <img src="./css/select.svg" />
+            </button>
             <button title="Удалить" :disabled="selectedBots.length === 0" @click="deleteBotsHandle()" type="button"
               class="btn btn-light">
               <img src="./css/trash.svg" />
@@ -98,10 +112,7 @@
 
           <table class="table caption-top">
             <thead>
-              <tr>
-                <th scope="col">
-                  <input type="checkbox" @click="toggleSelected()" />
-                </th>
+              <tr class="bg-light">
                 <th scope="col">#</th>
                 <th scope="col">Ник</th>
                 <th scope="col">Статус</th>
@@ -112,10 +123,7 @@
             </thead>
             <tbody>
 
-              <tr v-on:dblclick="toggleRow(bot)" v-for="(bot, i) in botsContainer" :key="bot.ID">
-                <td scope="row">
-                  <input :id=bot.UID :value=bot type="checkbox" v-model="selectedBots" />
-                </td>
+              <tr  class="border-top" v-on:dblclick="toggleRow(bot)"  v-bind:class="{ selected: selectedBots.includes(bot) }" v-for="(bot, i) in botsContainer" :key="bot.ID">
                 <td scope="row">{{ (botsContainerStep * 5) + i + 1 }}</td>
                 <td class="w-50">
                   {{ bot.Name === "" ? "asdadads" : bot.Name }}
@@ -126,7 +134,7 @@
                 <td class="d-none d-md-table-cell">{{ bot.LastUseDay === "" ? new Date().toLocaleDateString() :
                   bot.LastUseDay }}</td>
               </tr>
-
+              
             </tbody>
           </table>
           <div v-if="botsContainer.length === 0" class="w-100">
@@ -137,8 +145,8 @@
           <div class="d-flex justify-content-center">
             <div class="btn-group" role="group">
               <button @click="updateBotsContainerStep(-1)" type="button" class="btn color-white btn-info">
-                < </button>
-                  <button @click="updateBotsContainerStep(1)" type="button" class="btn color-white btn-info">></button>
+                < НАЗАД</button>
+                  <button @click="updateBotsContainerStep(1)" type="button" class="btn color-white btn-info"> ВПЕРЕД ></button>
             </div>
           </div>
         </div>
@@ -150,7 +158,11 @@
           <div class="modal-dialog">
             <div class="modal-content">
               <div class="modal-header">
-                <h5 class="modal-title" id="exampleModalLabel">New task</h5>
+                <h5 class="modal-title" id="exampleModalLabel">New task
+                  <span v-if="hideTask">
+                    ({{ selectedBots.length }})
+                  </span>
+                </h5>
                 <button type="button" id="taskAddDialogClose" class="btn-close" data-bs-dismiss="modal"
                   aria-label="Close"></button>
               </div>
@@ -159,21 +171,23 @@
                   <fieldset>
                     <legend>Создания новой задачи</legend>
                     <div class="mb-3">
-                      <label for="disabledSelect" class="form-label">Выбор задачи</label>
-                      <select id="disabledSelect" class="form-select">
-                        <option>Отправить Розу</option>
-                        <option>Отправить Розу (FREE)</option>
-                        <option>Отправить Сердечко</option>
-                        <option>Отправить Сердечко (FREE)</option>
+                      <select id="newTask" v-model="selectTask" class="form-select">
+                        <option value="1">Загрузить ботов</option>
+                        <option value="2">Отправить Розу</option>
+                        <option value="3">Отправить Розу (FREE)</option>
+                        <option value="4">Отправить Сердечко</option>
+                        <option value="5">Отправить Сердечко (FREE)</option>
+                        <option value="6" class="">Удалить</option>
+
                       </select>
                     </div>
-                    <div class="mb-3">
+                    <div v-if="hideTask"  class="mb-3">
                       <label for="disabledTextInput" class="form-label">player ID</label>
                       <input type="text" id="disabledTextInput" class="form-control" placeholder="id">
                     </div>
-                    <div class="mb-3">
+                    <div v-if="hideTask"    class="mb-3">
                       <label for="disabledTextInput" class="form-label">Кол-во</label>
-                      <input type="text" id="disabledTextInput" class="form-control" placeholder="1">
+                      <input type="text" id="disabledTextInput2" class="form-control" placeholder="1">
                     </div>
                   </fieldset>
                 </form>
@@ -215,24 +229,6 @@
       </div>
 
     </div>
-
-    <div class="footer d-sm-none d-flex justify-content-center shadow-sm bg-light">
-      <button title="Добавить бот" type="button" class="btn btn-light" data-bs-toggle="modal" data-bs-target="#addBotDialog"  >
-        <img src="./css/folder.svg" />
-      </button>
-      <button title="Обновить" v-if="self?.role === 'admin'" :disabled="selectedBots.length === 0" type="button" @click="updateSelectedBots"
-        class="btn btn-light">
-        <img src="./css/reload.svg" />
-      </button>
-      <button  title="Добавить задачу" :disabled="selectedBots.length === 0" type="button" data-bs-toggle="modal" data-bs-target="#addTaskDialog" 
-        class="btn btn-light">
-        <img src="./css/tasks.svg" />
-      </button>
-      <button title="Удалить" :disabled="selectedBots.length === 0" @click="deleteBotsHandle()" type="button"
-        class="btn btn-light">
-        <img src="./css/trash.svg" />
-      </button>
-   </div>
   </div>
 
 

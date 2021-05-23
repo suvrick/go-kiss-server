@@ -128,3 +128,12 @@ header {
     bottom: 0;
     width: 100%;
 }
+
+.selected {
+    background-color: rgba(0,0,0,0.1);
+}
+
+.index {
+    padding: 5px;
+    border: 1px solid red;
+}

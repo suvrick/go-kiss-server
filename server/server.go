@@ -2,6 +2,7 @@ package server
 
 import (
 	"log"
+	"net/http"
 
 	"github.com/suvrick/go-kiss-server/controllers"
 	"github.com/suvrick/go-kiss-server/game/models"
@@ -43,8 +44,8 @@ func Start(config *Config) error {
 	taskServer := tasks.NewTaskManager(60*6, userService, botService)
 	go taskServer.Run()
 
-	//return http.ListenAndServeTLS(":443", "../certs/cert.crt", "../certs/pk.key", router)
-	return router.Run(config.BindAddr)
+	return http.ListenAndServeTLS(":443", "../certs/cert.crt", "../certs/pk.key", router)
+	//return router.Run(config.BindAddr)
 }
 
 func setStaticFile(router *gin.Engine) {

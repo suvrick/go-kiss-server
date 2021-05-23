@@ -16,17 +16,28 @@ var app = new Vue({
     
 
         toastMsg: "",
-        progress: true
+        progress: true,
+
+        selectTask: 1,
+        hideTask: false
+
+    },
+    watch: {
+        selectTask: function(n, o){
+            this.hideTask = !["1", "6"].includes(this.selectTask)
+        }
+    },
+    computed: {
     },
     methods: {
+        //select all items
         toggleSelected() {
             this.selectAllFlag = !this.selectAllFlag
+            this.selectedBots = []
             if (this.selectAllFlag) {
                this.bots.forEach(b => {
                 this.selectedBots.push(b)
                })
-            } else {
-                this.selectedBots = []
             }
         },
         updateSelectedBots: function() {
@@ -63,10 +74,16 @@ var app = new Vue({
             m.click();
 
             console.log(m)
+            console.log(this.selectTask)
         
         },
         toggleRow: function(bot){
-            console.log(bot)
+            let r = this.selectedBots.find( b => b.UID === bot.UID) 
+            if (r) {
+                this.selectedBots = this.selectedBots.filter( b => b.UID != r.UID)
+            } else {
+                this.selectedBots.push(bot)
+            }
         },
         getAllBots: async function () {
             var result = await this.getFetchData("bots/all", "GET")
