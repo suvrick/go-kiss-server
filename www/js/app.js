@@ -19,7 +19,9 @@ var app = new Vue({
         progress: true,
 
         selectTask: 1,
-        hideTask: false
+        hideTask: false,
+
+        currentBot: null
 
     },
     watch: {
@@ -30,6 +32,14 @@ var app = new Vue({
     computed: {
     },
     methods: {
+        showDetailBot(bot) {
+            this.currentBot = bot;
+
+            var myModal = new bootstrap.Modal(document.getElementById('detailDialog'), {
+                keyboard: false
+              })
+            myModal.show()
+        },
         //select all items
         toggleSelected() {
             this.selectAllFlag = !this.selectAllFlag

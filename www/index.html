@@ -119,11 +119,13 @@
                 <th scope="col">Баланс</th>
                 <th scope="col">Бонус(д)</th>
                 <th class="d-none d-md-table-cell" scope="col">Дата</th>
+                <th>Лог</th>
               </tr>
             </thead>
             <tbody>
 
-              <tr  class="border-top" v-on:dblclick="toggleRow(bot)"  v-bind:class="{ selected: selectedBots.includes(bot) }" v-for="(bot, i) in botsContainer" :key="bot.ID">
+              <tr  class="border-top" v-on:dblclick="toggleRow(bot)"  v-bind:class="{ selected: selectedBots.includes(bot) }"
+               v-for="(bot, i) in botsContainer" :key="bot.ID">
                 <td scope="row">{{ (botsContainerStep * 5) + i + 1 }}</td>
                 <td class="w-50">
                   {{ bot.Name === "" ? "asdadads" : bot.Name }}
@@ -133,6 +135,12 @@
                 <td>{{ bot.BonusDay }}</td>
                 <td class="d-none d-md-table-cell">{{ bot.LastUseDay === "" ? new Date().toLocaleDateString() :
                   bot.LastUseDay }}</td>
+                <td @click="showDetailBot(bot)"  style="cursor: pointer;z-index: 9;" >
+                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-card-heading" viewBox="0 0 16 16">
+                    <path d="M14.5 3a.5.5 0 0 1 .5.5v9a.5.5 0 0 1-.5.5h-13a.5.5 0 0 1-.5-.5v-9a.5.5 0 0 1 .5-.5h13zm-13-1A1.5 1.5 0 0 0 0 3.5v9A1.5 1.5 0 0 0 1.5 14h13a1.5 1.5 0 0 0 1.5-1.5v-9A1.5 1.5 0 0 0 14.5 2h-13z"/>
+                    <path d="M3 8.5a.5.5 0 0 1 .5-.5h9a.5.5 0 0 1 0 1h-9a.5.5 0 0 1-.5-.5zm0 2a.5.5 0 0 1 .5-.5h6a.5.5 0 0 1 0 1h-6a.5.5 0 0 1-.5-.5zm0-5a.5.5 0 0 1 .5-.5h9a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-9a.5.5 0 0 1-.5-.5v-1z"/>
+                  </svg>
+                </td>
               </tr>
               
             </tbody>
@@ -201,25 +209,39 @@
           </div>
         </div>
 
-        <!--DIALOG ADD BOT -->
-        <div class="modal fade" id="addBotDialog" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1"
-          aria-labelledby="staticBackdropLabel" aria-hidden="true">
+        <!--DIALOG SHOW DETAIL -->
+        <div v-if="currentBot" class="modal fade" id="detailDialog" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">
           <div class="modal-dialog">
             <div class="modal-content">
               <div class="modal-header">
-                <h5 class="modal-title" id="exampleModalLabel">New bot</h5>
-                <button type="button" id="botAddDialogClose" class="btn-close" data-bs-dismiss="modal"
-                  aria-label="Close"></button>
+                <h5 class="modal-title">Bot detail</h5>
+                <button type="button" id="botAddDialogClose" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
               </div>
               <div class="modal-body">
-                <div class="form-group">
-                  <label for="frameUrlID">Ссылка на фрейм</label>
-                  <input v-model="frameUrl" type="email" class="form-control" id="frameUrlID" placeholder="">
-                </div>
+
+                  <div class="d-flex flex-column justify-content-center flex-md-row align-items-center m-2">
+                    <div class="p-2">
+                      <img width="150" height="150" src="css/avatar.png" alt=".">
+                    </div>
+                    <div class="d-flex flex-column p-2">
+                      <span><b style="display:inline-block;min-width: 70px;text-align: right;"> Ник </b>: {{ currentBot.Name }}</span>
+                      <span><b style="display:inline-block;min-width: 70px;text-align: right;"> UID </b>: {{ currentBot.UID }}</span>
+                      <span><b style="display:inline-block;min-width: 70px;text-align: right;"> Balance </b>: {{ currentBot.Balance }}</span>
+                      <span><b style="display:inline-block;min-width: 70px;text-align: right;"> Bonus day </b>: {{ currentBot.BonusDay }}</span>
+                      <span><b style="display:inline-block;min-width: 70px;text-align: right;"> Date</b>: {{ currentBot.LastUseDay }}</span>
+                    </div>
+                  </div>
+                  
+                  <div class="text-center">
+                    <h6 class="p-3 list-group-item-info" >Logger: </h6>
+                    <ul v-for="log in currentBot?.Logger" class="list-group list-group-flush">
+                      <li class=" list-group-item">{{ log.Line }}</li>
+                    </ul>
+                  </div>
               </div>
               <div class="modal-footer">
-                <button type="button" @click="addBotClick()" :disabled="frameUrl === ''" class="btn btn-primary w-100">
-                  GO
+                <button type="button"  data-bs-dismiss="modal" class="btn btn-primary">
+                  Закрыть
                 </button>
               </div>
             </div>
