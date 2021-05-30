@@ -20,7 +20,7 @@ var app = new Vue({
         progress: true,
 
         task_id: "1",
-        target_id: 6451126,
+        target_id: "",
         count: 0,
 
         hideTask: false,
