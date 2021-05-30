@@ -2,8 +2,8 @@ package client
 
 import "github.com/suvrick/go-kiss-server/game/packets/encode"
 
-// "IIIIB,SS",
-// BUY(6); good_id:I, cost:I, target_id:I, data:I, price_type:B, hash:S, params: S
+// "IIIIBI,SS",
+// BUY(6); good_id:I, cost:I, target_id:I, data:I, price_type:B, count:I, hash:S, params: S
 
 // PrizeClientPacket ...
 type PrizeClientPacket struct {
@@ -14,22 +14,24 @@ type PrizeClientPacket struct {
 	Target_id  int
 	Data       int
 	Price_type byte
+	Count      int
 	Hash       string
 	Params     string
 }
 
 // NewPrizeClientPacket ...
-func NewPrizeClientPacket() encode.ClientPacket {
+func NewPrizeClientPacket(good_id, cost, target_id, data int, price_type byte, count int, hash, params string) encode.ClientPacket {
 	return &PrizeClientPacket{
 		Type:       6,
 		DeviceType: 0x04,
-		Good_id:    0,
-		Cost:       0,
-		Target_id:  0,
-		Data:       0,
-		Price_type: 0,
-		Hash:       "",
-		Params:     "",
+		Good_id:    good_id,
+		Cost:       cost,
+		Target_id:  target_id,
+		Data:       data,
+		Price_type: price_type,
+		Count:      count,
+		Hash:       hash,
+		Params:     params,
 	}
 }
 

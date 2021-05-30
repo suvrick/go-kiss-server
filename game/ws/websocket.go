@@ -23,7 +23,8 @@ type GameSock struct {
 	bot            *models.Bot
 	botChanUpdater chan *models.Bot
 
-	debug bool
+	packet *encode.ClientPacket
+	debug  bool
 }
 
 const host = "wss://bottlews.itsrealgames.com"
@@ -38,6 +39,22 @@ func NewSocket(b *models.Bot) *GameSock {
 		msgID:  0,
 		bot:    b,
 		debug:  false,
+	}
+
+	return gs
+}
+
+// NewSocket созадает и заполняет новую структуру
+// p - ссылка на Player
+// updater - канал типа Player
+func NewSocketWithPrize(b *models.Bot, p *encode.ClientPacket) *GameSock {
+
+	gs := &GameSock{
+		client: nil,
+		msgID:  0,
+		bot:    b,
+		debug:  false,
+		packet: p,
 	}
 
 	return gs
@@ -122,6 +139,11 @@ func (gs *GameSock) readMessage() {
 			}
 
 			gs.bonusSend()
+
+			if gs.packet != nil {
+				gs.additionPacketSend()
+			}
+
 		case 5:
 			gs.infoReceive(reader)
 		case 7:

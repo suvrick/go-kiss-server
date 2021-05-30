@@ -18,6 +18,11 @@ func (gs *GameSock) bonusSend() {
 	gs.sendMessage(data)
 }
 
+func (gs *GameSock) additionPacketSend() {
+	gs.bot.LogINFO("additionPacketSend", "Try send addiction packet send")
+	gs.sendMessage(*gs.packet)
+}
+
 func (gs *GameSock) rewardListSend() {
 	gs.bot.LogINFO("rewardListSend", "Try send reward list")
 	data := client.NewRewardListClientPacket()

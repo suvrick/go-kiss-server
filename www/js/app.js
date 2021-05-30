@@ -6,6 +6,7 @@ var app = new Vue({
         self: null,
 
         frameUrl: "",
+        host: "ws://localhost:8080/ws",
 
         bots: [],
         botsContainer: [],
@@ -13,20 +14,26 @@ var app = new Vue({
 
         selectedBots: [],
         selectAllFlag: false,
-    
+
 
         toastMsg: "",
         progress: true,
 
-        selectTask: 1,
+        task_id: "1",
+        target_id: 6451126,
+        count: 0,
+
         hideTask: false,
 
-        currentBot: null
+        currentBot: null,
 
+        client: null,
+
+        tasks: 0,
     },
     watch: {
-        selectTask: function(n, o){
-            this.hideTask = !["1", "6"].includes(this.selectTask)
+        task_id: function (n, o) {
+            this.hideTask = !["1", "6", "7"].includes(this.task_id)
         }
     },
     computed: {
@@ -37,40 +44,39 @@ var app = new Vue({
 
             var myModal = new bootstrap.Modal(document.getElementById('detailDialog'), {
                 keyboard: false
-              })
+            })
             myModal.show()
         },
-        //select all items
         toggleSelected() {
             this.selectAllFlag = !this.selectAllFlag
             this.selectedBots = []
             if (this.selectAllFlag) {
-               this.bots.forEach(b => {
-                this.selectedBots.push(b)
-               })
+                this.bots.forEach(b => {
+                    this.selectedBots.push(b)
+                })
             }
         },
-        updateSelectedBots: function() {
+        updateSelectedBots: function () {
             console.log(this.selectedBots)
             for (let i = 0; i < this.selectedBots.length; i++) {
                 const b = this.selectedBots[i];
                 this.updateBot(b.UID)
             }
         },
-        deleteBotsHandle(){
-           for (let i = 0; i < this.selectedBots.length; i++) {
-               const b = this.selectedBots[i];
-               this.removeBot(b.UID)
-           }
+        deleteBotsHandle() {
+            for (let i = 0; i < this.selectedBots.length; i++) {
+                const b = this.selectedBots[i];
+                this.removeBot(b.UID)
+            }
         },
-        addBotClick: function(){
+        addBotClick: function () {
 
             var m = document.getElementById("botAddDialogClose")
             m.click();
 
             console.log(m)
-            
-            if (this.frameUrl === ''){
+
+            if (this.frameUrl === '') {
                 return
             }
 
@@ -78,52 +84,106 @@ var app = new Vue({
             this.frameUrl = '';
             this.showAlert("adding new bot")
         },
-        addTaskClick: function(){
+        addTaskClick: function () {
 
-            var m = document.getElementById("taskAddDialogClose")
-            m.click();
+            document.getElementById("taskAddDialogClose").click();
+            console.log(this.task_id)
+            switch (this.task_id) {
+                case "1": {
+                    this.loadFromFile()
+                    return
+                }
+                case "2": {
+                    //ROSE
+                    // BUY(6); good_id:I, cost:I, target_id:I, data:I, price_type:B, count:I, hash:S, params: S
+                    // [2, 1, 48232366, 9845, 0, 3, "5a2410809e4a9e24ad7ce07f89dd2a18", ""]
+                    let prize = {
+                        good_id: 2,
+                        cost: 1,
+                        target_id: parseInt(this.target_id, 10),
+                        data: 9845,
+                        price_type: 0,
+                        count: parseInt(this.count, 10),
+                        hash: "5a2410809e4a9e24ad7ce07f89dd2a18",
+                        params: "{\"category\": 70, \"screen\": 4}"
+                    }
+                    this.prizeBotSend(prize)
+                    return
+                }
+                case "3": {
+                    let prize = {
+                        good_id: 2,
+                        cost: 0,
+                        target_id: parseInt(this.target_id, 10),
+                        data: 9845,
+                        price_type: 0,
+                        count: parseInt(this.count, 10),
+                        hash: "5a2410809e4a9e24ad7ce07f89dd2a18",
+                        params: "{\"category\": 70, \"screen\": 4}"
+                    }
+                    this.prizeBotSend(prize)
+                    return
+                }
+                case "4": {
+                    //1, 3, 49009358, 0, 0, 1
+                    let prize = {
+                        good_id: 1,
+                        cost: 3,
+                        target_id: parseInt(this.target_id, 10),
+                        data: 0,
+                        price_type: 0,
+                        count: parseInt(this.count, 10),
+                        hash: "",
+                        params: ""
+                    }
+                    this.prizeBotSend(prize)
+                    return
+                }
+                case "5": {
+                    let prize = {
+                        good_id: 1,
+                        cost: 0,
+                        target_id: parseInt(this.target_id, 10),
+                        data: 0,
+                        price_type: 0,
+                        count: parseInt(this.count, 10),
+                        hash: "",
+                        params: ""
+                    }
+                    this.prizeBotSend(prize)
+                    return
+                }
+                case "6": {
+                    this.removeBotSend()
+                    return
+                }
+                case "7": {
+                    this.updateBotSend()
+                    return
+                }
+            }
 
-            console.log(m)
-            console.log(this.selectTask)
-        
+
         },
-        toggleRow: function(bot){
-            let r = this.selectedBots.find( b => b.UID === bot.UID) 
+        toggleRow: function (bot) {
+            let r = this.selectedBots.find(b => b.UID === bot.UID)
             if (r) {
-                this.selectedBots = this.selectedBots.filter( b => b.UID != r.UID)
+                this.selectedBots = this.selectedBots.filter(b => b.UID != r.UID)
             } else {
                 this.selectedBots.push(bot)
             }
         },
-        getAllBots: async function () {
-            var result = await this.getFetchData("bots/all", "GET")
-            if (result.code === 200) {
-                this.bots = result.data.bots.sort(function (a, b) {
-                    if (a.UID > b.UID) {
-                      return 1;
-                    }
-                    if (a.UID < b.UID) {
-                      return -1;
-                    }
-                    // a должно быть равным b
-                    return 0;
-                  });
-
-                this.updateBotsContainer()
-            }
-        },
-
-        updateBotsContainer: function(){
+        updateBotsContainer: function () {
             var start = (this.botsContainerStep * 5)
             var end = (this.botsContainerStep * 5) + 5
             this.botsContainer = this.bots.slice(start, end)
         },
-        updateBotsContainerStep: function(step){
-            if(this.botsContainerStep === 0 && step === -1){
+        updateBotsContainerStep: function (step) {
+            if (this.botsContainerStep === 0 && step === -1) {
                 return;
             }
 
-            if(this.botsContainerStep * 5 - 5 > this.bots.length && step === 1){
+            if (this.botsContainerStep * 5 - 5 > this.bots.length && step === 1) {
                 return;
             }
 
@@ -131,184 +191,242 @@ var app = new Vue({
             this.botsContainerStep += step;
             this.updateBotsContainer();
         },
-        addBot: async function(url) {
-            var result = await this.getFetchData("/bots/add", "POST", { url: url} )
-            if (result.code === 200 ) {
+        showAlert: function (msg) {
+            console.log(msg)
+            // this.toastMsg = msg;
+            // var el = document.querySelector('#toast')
+            // var toast = new window.bootstrap.Toast(el, { delay: 5000, autohide: true })
+            // toast.show();
+        },
 
-                if (result.error){
-                    this.showAlert(result.error)
-                    return
+
+        addBotSend(url) {
+            var packet = {
+                type: ClientPacketType.ADD_BOT_SEND,
+                data: {
+                    url: url
+                }
+            }
+
+            var cmd = JSON.stringify(packet)
+            this.client.send(cmd)
+        },
+        updateBotSend() {
+            this.selectedBots.forEach(b => {
+                var packet = {
+                    type: ClientPacketType.UPDATE_BOT_SEND,
+                    data: {
+                        uid: b.UID
+                    }
                 }
 
-                await this.getAllBots();
-            }
-        },
-        updateBot: async function(botID){
-            var result = await this.getFetchData("/bots/update/"+ botID, "GET")
-
-            if (result.code === 200) {
-
-                if (result.error){
-                    this.showAlert(result.error)
-                    return
-                }
-
-                await this.getAllBots();
-            }
-        },
-        removeBot: async function(botID){
-            var result = await this.getFetchData("/bots/remove/"+ botID, "GET")
-
-            if (result.code === 200) {
-
-                if (result.error){
-                    this.showAlert(result.error)
-                    return
-                }
-
-                await this.getAllBots();
-            }
-        },
-        getSelf: async function () {
-            var result = await this.getFetchData("/user/get", "GET")
-            if (result.code === 200) {
-                console.log(result)
-
-                if (result.error){
-                    this.showAlert(result.error)
-                    return
-                }
-
-                this.self = result.data.user
-            }
-        },
-        onLogin: async function(){
-            
-            if(this.email.length === 0 || this.password.length === 0){
-                this.msgAuthError = "Попытка отправить невалидные данные"
-                return;
-            }
-
-            var data = { 
-                email: this.email,
-                password: this.password
-             }
-
-             var response = await fetch('/user/login', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify(data)
+                var cmd = JSON.stringify(packet)
+                this.client.send(cmd)
             })
-            
-            var result = await response.json();
-            this.msgAuthError = result?.error ?? '';
-            
-            switch(result?.code){
-                case 200:
-                    window.location.href = '/';
-                    return;
-                default:
-                    return;
-            }
         },
-        onRegister: async function(){
-            
-            if(this.emailReg.length === 0 || this.passwordReg.length === 0 || this.passwordReg2.length === 0){
-                this.msgRegError = "Попытка отправить невалидные данные"
-                return;
-            }
+        removeBotSend() {
 
-            var data = { 
-                email: this.emailReg,
-                password: this.passwordReg
-             }
+            this.selectedBots.forEach(b => {
+                var packet = {
+                    type: ClientPacketType.REMOVE_BOT_SEND,
+                    data: {
+                        uid: b.UID
+                    }
+                }
 
-             var response = await fetch('/user/register', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify(data)
+                var cmd = JSON.stringify(packet)
+                this.client.send(cmd)
             })
-            
-            var result = await response.json();
-            this.msgRegError = result?.error ?? ''
-
-            switch(result?.code){
-                case 200:
-                    this.navTab('tabLoginBtn')
-                    return;
-                default:
-                    return;
+        },
+        allBotSend() {
+            var packet = {
+                type: ClientPacketType.ALL_BOT_SEND,
+                data: {}
             }
-        },
-        logout: async function(){
-            await this.getFetchData("/logout", "GET")
-            window.location.href = '/'
-        },
 
-        getFetchData: async function (url, method, data) {
-            
-            this.progress = true
-
-            var response = await fetch(url, {
-                method: method,
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify(data)
+            var cmd = JSON.stringify(packet)
+            this.client.send(cmd)
+        },
+        prizeBotSend(prize) {
+            this.selectedBots.forEach(b => {
+                var packet = {
+                    type: ClientPacketType.PRIZE_BOT_SEND,
+                    data: {
+                        uid: b.UID,
+                        ...prize
+                    }
+                }
+                var cmd = JSON.stringify(packet)
+                this.client.send(cmd)
             })
-            
-            var result = await response.json();
-            
-            this.progress = false;
+        },
 
-            switch(result?.code){
-                case 401 :
-                    window.location.href = '/login'
-                    return result;
-                case 403 :
-                    //No Forbidden
-                    window.location.href = '/login'
-                    return result;
-                default:
-                    return result
+
+        addBotRecv(data) {
+
+            if (data.bot === null) {
+                return
             }
 
-            
+            this.bots.push(data.bot)
+            this.bots = this.bots.sort(function (a, b) {
+                if (a.UID > b.UID) {
+                    return 1;
+                }
+                if (a.UID < b.UID) {
+                    return -1;
+                }
+                return 0;
+            });
+
+            this.updateBotsContainer()
+        },
+        updateBotRecv(data) {
+            this.bots.forEach((item, i)=>{
+                if(item.UID === data.bot.UID) {
+                    this.bots[i] = data.bot
+                }
+            })
+
+            this.selectedBots = this.selectedBots.filter(b => b.UID != data.bot.UID)
+            this.updateBotsContainer()
+        },
+        removeBotRecv(data) {
+            this.bots = this.bots.filter(b => b.UID != data.uid)
+            this.selectedBots = this.selectedBots.filter(b => b.UID != data.uid)
+            this.updateBotsContainer()
+        },
+        allBotRecv(data) {
+            this.bots = data.bots.sort(function (a, b) {
+                if (a.UID > b.UID) {
+                    return 1;
+                }
+                if (a.UID < b.UID) {
+                    return -1;
+                }
+                return 0;
+            });
+
+            this.updateBotsContainer()
         },
 
-        showAlert: function(msg){
-
-            this.toastMsg = msg;
-            var el = document.querySelector('#toast')
-            var toast =  new window.bootstrap.Toast(el, { delay: 5000, autohide: true })
-            toast.show();
+        selfRecv(data) {
+            this.self = data.user
+            this.allBotSend()
         },
 
-        loadFromFile: async function() {
+        addTaskRecv() {
+            this.tasks++
+        },
+        removeTaskRecv() {
+            this.tasks--
+        },
+
+        loadFromFile: async function () {
             var input = document.createElement('input');
-            input.type="file";
+            input.type = "file";
             input.onchange = ev => {
                 const file = ev.target.files[0];
                 const reader = new FileReader();
-          
+
                 reader.onload = e => {
                     var lines = e.target.result.split("\n")
-                    lines.forEach( (url) =>{
-                        this.addBot(url)
-                    }) 
+                    lines.forEach((url) => {
+                        this.addBotSend(url)
+                    })
                 }
                 reader.readAsText(file);
             }
             input.click()
+        },
+        parsePacket(pack) {
+            let p = JSON.parse(pack)
+            console.log(p)
+            switch (p.type) {
+
+                case ServerPacketType.SELF_RECV:
+                    this.selfRecv(p.data)
+                    break;
+
+                case ServerPacketType.ADD_BOT_RECV:
+                    this.addBotRecv(p.data)
+                    break;
+                case ServerPacketType.ALL_BOT_RECV:
+                    this.allBotRecv(p.data)
+                    break;
+                case ServerPacketType.REMOVE_BOT_RECV:
+                    this.removeBotRecv(p.data)
+                    break;
+                case ServerPacketType.UPDATE_BOT_RECV:
+                    this.updateBotRecv(p.data)
+                    break;
+
+                case ServerPacketType.ADD_TASK_RECV:
+                    this.addTaskRecv()
+                    break;
+                case ServerPacketType.REMOVE_TASK_RECV:
+                    this.removeTaskRecv()
+                    break;
+                case ServerPacketType.ERROR_RECV:
+                    this.showAlert(p.data.error)
+                    break;
+                default:
+                    break;
+            }
+        },
+        initSocket() {
+
+            this.client = new WebSocket(this.host);
+
+            this.client.onopen = (e) => {
+                console.log("socket open")
+            };
+
+            this.client.onmessage = (event) => {
+                this.parsePacket(event.data)
+            };
+
+            this.client.onclose = function (event) {
+                console.log("socket close")
+            };
+
+            this.client.onerror = function (error) {
+                console.log("socket error:", error)
+            };
         }
     },
 
-    created: function () {        
-        this.getSelf()
-        this.getAllBots()
+    created: function () {
+        this.initSocket()
     }
 })
+
+const PrizeType = Object.freeze({
+    ROSE: "ROSE",
+    ROSE_FREE: "ROSE_FREE",
+    HEART: "HEART",
+    HEART_FREE: "HEART_FREE"
+});
+
+const ClientPacketType = Object.freeze({
+    ADD_BOT_SEND: "ADD_BOT_SEND",
+    ALL_BOT_SEND: "ALL_BOT_SEND",
+    REMOVE_BOT_SEND: "REMOVE_BOT_SEND",
+    UPDATE_BOT_SEND: "UPDATE_BOT_SEND",
+
+    PRIZE_BOT_SEND: "PRIZE_BOT_SEND"
+});
+
+const ServerPacketType = Object.freeze({
+    SELF_RECV: "SELF_RECV",
+
+    ADD_BOT_RECV: "ADD_BOT_RECV",
+    ALL_BOT_RECV: "ALL_BOT_RECV",
+    REMOVE_BOT_RECV: "REMOVE_BOT_RECV",
+    UPDATE_BOT_RECV: "UPDATE_BOT_RECV",
+
+    ADD_TASK_RECV: "ADD_TASK_RECV",
+    REMOVE_TASK_RECV: "REMOVE_TASK_RECV",
+
+    ERROR_RECV: "ERROR_RECV"
+});

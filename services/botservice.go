@@ -4,13 +4,12 @@ import (
 	"sync"
 	"time"
 
-	"github.com/gin-gonic/gin"
 	"github.com/suvrick/go-kiss-server/errors"
 	"github.com/suvrick/go-kiss-server/game/models"
+	"github.com/suvrick/go-kiss-server/game/packets/encode"
 	"github.com/suvrick/go-kiss-server/game/ws"
 	"github.com/suvrick/go-kiss-server/model"
 	"github.com/suvrick/go-kiss-server/repositories"
-	"github.com/suvrick/go-kiss-server/session"
 	"github.com/suvrick/go-kiss-server/until"
 )
 
@@ -33,12 +32,10 @@ func NewBotService(repo *repositories.BotRepository, us *UserService) *BotServic
 }
 
 // Add ...
-func (s *BotService) Add(c *gin.Context, url string) (*models.Bot, error) {
+func (s *BotService) Add(user *model.User, url string) (*models.Bot, error) {
 
 	s.locker.Lock()
 	defer s.locker.Unlock()
-
-	user := session.GetUser(c)
 
 	if err := s.checkActualUser(user); err != nil {
 		return nil, err
@@ -55,7 +52,7 @@ func (s *BotService) Add(c *gin.Context, url string) (*models.Bot, error) {
 	gs := ws.NewSocket(bot)
 	gs.Go()
 
-	_, err := s.botRepository.Add(*bot)
+	_, err := s.botRepository.Add(bot)
 
 	if err != nil {
 		return nil, err
@@ -69,30 +66,47 @@ func (s *BotService) Add(c *gin.Context, url string) (*models.Bot, error) {
 	return bot, nil
 }
 
-func (s *BotService) UpdateByID(c *gin.Context, id string) (*models.Bot, error) {
-	user := session.GetUser(c)
-	bot, err := s.botRepository.Find(id, user.ID)
+func (s *BotService) UpdateByID(botUID string, user *model.User) (*models.Bot, error) {
+
+	bot, err := s.botRepository.Find(botUID, user.ID)
 
 	if err != nil {
 		return nil, err
 	}
 
-	gs := ws.NewSocket(&bot)
+	gs := ws.NewSocket(bot)
 	gs.Go()
 
 	err = s.botRepository.Update(bot)
 
-	return &bot, err
+	return bot, err
+}
+
+func (s *BotService) SendPrize(botUID string, user *model.User, prize encode.ClientPacket) (*models.Bot, error) {
+	s.locker.Lock()
+	defer s.locker.Unlock()
+
+	bot, err := s.botRepository.Find(botUID, user.ID)
+
+	if bot.UserID != user.ID || err != nil {
+		return nil, errors.ErrRecordNotFound
+	}
+
+	gs := ws.NewSocketWithPrize(bot, &prize)
+	gs.Go()
+
+	err = s.botRepository.Update(bot)
+
+	return bot, err
 }
 
 // UpdateBot ...
-func (s *BotService) UpdateBot(bot models.Bot) {
-	s.botRepository.Update(bot)
+func (s *BotService) UpdateBot(bot *models.Bot) error {
+	return s.botRepository.Update(bot)
 }
 
 // All ...
-func (s *BotService) All(c *gin.Context) ([]*models.Bot, error) {
-	user := session.GetUser(c)
+func (s *BotService) All(user *model.User) ([]*models.Bot, error) {
 	return s.botRepository.All(user.ID)
 }
 
@@ -102,17 +116,10 @@ func (s *BotService) AllByUserID(userID int) ([]*models.Bot, error) {
 }
 
 // Delete ...
-func (s *BotService) Delete(c *gin.Context) error {
+func (s *BotService) Delete(botUID string, user *model.User) error {
 
 	s.locker.Lock()
 	defer s.locker.Unlock()
-
-	user := session.GetUser(c)
-	if user.ID == 0 {
-		return errors.ErrNotAuthenticated
-	}
-
-	botUID := c.Param("botID")
 
 	bot, err := s.botRepository.Find(botUID, user.ID)
 

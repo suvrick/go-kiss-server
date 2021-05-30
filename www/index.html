@@ -14,25 +14,23 @@
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.1/dist/css/bootstrap.min.css" rel="stylesheet"
     integrity="sha384-+0n0xVW2eSR5OomGNYDnhzAbDsOXxcvSN1TPprVMTNDbiYZCxYbOOl7+AMvyTG2x" crossorigin="anonymous">
   <link rel="stylesheet" href="css/style.css">
-  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.1/dist/js/bootstrap.bundle.min.js"
-    integrity="sha384-gtEjrD/SeCtmISkJkNUaaKMoLD0//ElJ19smozuHV6z3Iehds+3Ulb9Bn9Plx0x4"
-    crossorigin="anonymous"></script>
+
 
 
   <title>Botovod</title>
 </head>
 
 <body>
-  <div id="app">
+  <div id="app" class="vh-100">
     <div class="container">
-
-
 
       <div class="row">
         <header class="p-2 border-bottom">
           <div id="appTabBtns" class="d-flex flex-wrap align-items-center justify-content-between">
             <a href="/" class="d-flex align-items-center mb-2 mb-lg-0 text-dark text-decoration-none">
-              <img src="./css/logov2.png" class="bi me-2" width="60" height="40">
+              <span style="font-size: 2rem;font-weight: 700;" >
+                BOTOVOD
+              </span>
             </a>
           </div>
         </header>
@@ -61,7 +59,7 @@
             <li class="d-flex justify-content-end align-items-center">
               Всего задач:
               <span class="badge bg-primary ml-15">
-                {{ selectedBots.length }}
+                {{ tasks }}
               </span>
             </li>
             <li class="d-flex justify-content-end align-items-center">
@@ -71,10 +69,6 @@
               </span>
             </li>
           </ul>
-
-          <div v-if="progress" class="spinner-grow" role="status">
-            <span class="sr-only">Loading...</span>
-          </div>
 
           <div class="p-2 d-flex justify-content-between">
             <button @click="toggleSelected" title="Выделить всё" type="button" class="btn btn-light">
@@ -87,34 +81,12 @@
           </button>
           </div>
 
-          <div v-if="false" class="d-none d-flex justify-content-md-end">
-            <button title="Добавить бот" type="button" class="btn btn-light" data-bs-toggle="modal"
-              data-bs-target="#addBotDialog">
-              <img src="./css/folder.svg" />
-            </button>
-            <button title="Обновить" v-if="self?.role === 'admin'" :disabled="selectedBots.length === 0" type="button"
-              @click="updateSelectedBots" class="btn btn-light">
-              <img src="./css/reload.svg" />
-            </button>
-            <button title="Добавить задачу" :disabled="selectedBots.length === 0" type="button" data-bs-toggle="modal"
-              data-bs-target="#addTaskDialog" class="btn btn-light">
-              <img src="./css/tasks.svg" />
-            </button>
-            <button @click="toggleSelected" title="Выделить всё" type="button" class="btn btn-light">
-              <img src="./css/select.svg" />
-            </button>
-            <button title="Удалить" :disabled="selectedBots.length === 0" @click="deleteBotsHandle()" type="button"
-              class="btn btn-light">
-              <img src="./css/trash.svg" />
-            </button>
-          </div>
-
-
           <table class="table caption-top">
             <thead>
               <tr class="bg-light">
                 <th scope="col">#</th>
                 <th scope="col">Ник</th>
+                <th  class="d-none d-md-table-cell" scope="col">UID</th>
                 <th scope="col">Статус</th>
                 <th scope="col">Баланс</th>
                 <th scope="col">Бонус(д)</th>
@@ -127,9 +99,10 @@
               <tr  class="border-top" v-on:dblclick="toggleRow(bot)"  v-bind:class="{ selected: selectedBots.includes(bot) }"
                v-for="(bot, i) in botsContainer" :key="bot.ID">
                 <td scope="row">{{ (botsContainerStep * 5) + i + 1 }}</td>
-                <td class="w-50">
-                  {{ bot.Name === "" ? "asdadads" : bot.Name }}
+                <td class="w-25">
+                  {{ bot.Name === "" ? "No name" : bot.Name }}
                 </td>
+                <td class="d-none d-md-table-cell">{{ bot.UID }}</td>
                 <td>{{ bot.Result === "" ? "need update" : bot.Result }}</td>
                 <td>{{ bot.Balance }}</td>
                 <td>{{ bot.BonusDay }}</td>
@@ -150,7 +123,7 @@
               Нет данных
             </p>
           </div>
-          <div class="d-flex justify-content-center">
+          <div class="d-flex justify-content-center p-5">
             <div class="btn-group" role="group">
               <button @click="updateBotsContainerStep(-1)" type="button" class="btn color-white btn-info">
                 < НАЗАД</button>
@@ -179,23 +152,25 @@
                   <fieldset>
                     <legend>Создания новой задачи</legend>
                     <div class="mb-3">
-                      <select id="newTask" v-model="selectTask" class="form-select">
+                      <select id="newTask" v-model="task_id" class="form-select">
                         <option value="1">Загрузить ботов</option>
                         <option value="2">Отправить Розу</option>
                         <option value="3">Отправить Розу (FREE)</option>
                         <option value="4">Отправить Сердечко</option>
                         <option value="5">Отправить Сердечко (FREE)</option>
+
+                        <option value="7">Обновить</option>
                         <option value="6" class="">Удалить</option>
 
                       </select>
                     </div>
                     <div v-if="hideTask"  class="mb-3">
-                      <label for="disabledTextInput" class="form-label">player ID</label>
-                      <input type="text" id="disabledTextInput" class="form-control" placeholder="id">
+                      <label class="form-label">player ID</label>
+                      <input v-model="target_id" type="text" class="form-control" placeholder="id">
                     </div>
-                    <div v-if="hideTask"    class="mb-3">
-                      <label for="disabledTextInput" class="form-label">Кол-во</label>
-                      <input type="text" id="disabledTextInput2" class="form-control" placeholder="1">
+                    <div v-if="hideTask" class="mb-3">
+                      <label class="form-label">Кол-во подарков с одного бота</label>
+                      <input v-model="count" type="text" class="form-control" placeholder="1">
                     </div>
                   </fieldset>
                 </form>
@@ -250,10 +225,33 @@
 
       </div>
 
+      <div class="row">
+        <div class="toast align-items-center text-white bg-primary border-0" role="alert" aria-live="assertive" aria-atomic="true">
+          <div class="d-flex">
+            <div class="toast-body">
+              {{ toastMsg }}
+            </div>
+            <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <div class="footer">
+      <div v-if="tasks != 0" class="border-bottom border-2 border-primary text-end">
+        <div class="container">
+          <span class="spinner-grow spinner-grow-sm" role="status" aria-hidden="true"></span>
+           Processing...
+        </div>
+      </div>
     </div>
   </div>
 
 
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.1/dist/js/bootstrap.bundle.min.js"
+  integrity="sha384-gtEjrD/SeCtmISkJkNUaaKMoLD0//ElJ19smozuHV6z3Iehds+3Ulb9Bn9Plx0x4"
+  crossorigin="anonymous"></script>
   <script src="https://cdn.jsdelivr.net/npm/vue@2"></script>
   <script src="js/app.js"></script>
 </body>

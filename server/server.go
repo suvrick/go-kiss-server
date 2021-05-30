@@ -38,8 +38,8 @@ func Start(config *Config) error {
 	botService := services.NewBotService(botRepo, userService)
 
 	controllers.NewUserController(router, userService)
-	controllers.NewBotController(router, botService, userService)
 	controllers.NewAdminController(router, userService)
+	controllers.NewWsController(router, userService, botService)
 
 	taskServer := tasks.NewTaskManager(60*6, userService, botService)
 	go taskServer.Run()
