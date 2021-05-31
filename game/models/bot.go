@@ -17,7 +17,6 @@ type LoggerLine struct {
 	Line  string
 }
 
-
 // Bot ...
 type Bot struct {
 	gorm.Model
@@ -192,7 +191,7 @@ func (bot *Bot) Log(t LogType, methodName, msg string) {
 		msg = fmt.Sprintf("ERROR >> (%s) %s", methodName, msg)
 	}
 
-	fmt.Println(msg)
+	//fmt.Println(msg)
 	bot.Logger = append(bot.Logger, LoggerLine{
 		Line: msg,
 	})

@@ -6,7 +6,8 @@ var app = new Vue({
         self: null,
 
         frameUrl: "",
-        host: "ws://localhost:8080/ws",
+        //host: "ws://localhost:8080/ws",
+        host: "wss://suvricksoft.ru/ws",
 
         bots: [],
         botsContainer: [],
@@ -107,24 +108,27 @@ var app = new Vue({
                         hash: "5a2410809e4a9e24ad7ce07f89dd2a18",
                         params: "{\"category\": 70, \"screen\": 4}"
                     }
-                    this.prizeBotSend(prize)
+                    this.prizeBotSend2(prize)
                     return
                 }
                 case "3": {
+                    //Зажигалка
+                    //[2, 1, 42083206, 10120, 0, 1, "5a3f246110761d3e9d5d344af9b5aaa0", "{"category": 70, "screen": 4}"]
                     let prize = {
                         good_id: 2,
-                        cost: 0,
+                        cost: 1,
                         target_id: parseInt(this.target_id, 10),
-                        data: 9845,
+                        data: 10120,
                         price_type: 0,
                         count: parseInt(this.count, 10),
-                        hash: "5a2410809e4a9e24ad7ce07f89dd2a18",
+                        hash: "5a3f246110761d3e9d5d344af9b5aaa0",
                         params: "{\"category\": 70, \"screen\": 4}"
                     }
-                    this.prizeBotSend(prize)
+                    this.prizeBotSend2(prize)
                     return
                 }
                 case "4": {
+                    //HEART
                     //1, 3, 49009358, 0, 0, 1
                     let prize = {
                         good_id: 1,
@@ -136,21 +140,23 @@ var app = new Vue({
                         hash: "",
                         params: ""
                     }
-                    this.prizeBotSend(prize)
+                    this.prizeBotSend2(prize)
                     return
                 }
                 case "5": {
+                    //Фляжка
+                    //[2, 1, 48273340, 10125, 0, 4, "dcddfb78c71cb85d2e7cd978d46f2ee5", "{"category": 70, "screen": 4}"]
                     let prize = {
-                        good_id: 1,
-                        cost: 0,
+                        good_id: 2,
+                        cost: 1,
                         target_id: parseInt(this.target_id, 10),
-                        data: 0,
+                        data: 10125,
                         price_type: 0,
                         count: parseInt(this.count, 10),
-                        hash: "",
-                        params: ""
+                        hash: "dcddfb78c71cb85d2e7cd978d46f2ee5",
+                        params: "{\"category\": 70, \"screen\": 4}"
                     }
-                    this.prizeBotSend(prize)
+                    this.prizeBotSend2(prize)
                     return
                 }
                 case "6": {
@@ -260,7 +266,18 @@ var app = new Vue({
                 this.client.send(cmd)
             })
         },
+        prizeBotSend2(prize) {
 
+                var packet = {
+                    type: ClientPacketType.PRIZE_BOT_SEND2,
+                    data: {
+                        uids: this.selectedBots.map( o => { return o.UID }),
+                        ...prize
+                    }
+                }
+                var cmd = JSON.stringify(packet)
+                this.client.send(cmd)
+        },
 
         addBotRecv(data) {
 
@@ -414,7 +431,8 @@ const ClientPacketType = Object.freeze({
     REMOVE_BOT_SEND: "REMOVE_BOT_SEND",
     UPDATE_BOT_SEND: "UPDATE_BOT_SEND",
 
-    PRIZE_BOT_SEND: "PRIZE_BOT_SEND"
+    PRIZE_BOT_SEND: "PRIZE_BOT_SEND",
+    PRIZE_BOT_SEND2: "PRIZE_BOT_SEND2"
 });
 
 const ServerPacketType = Object.freeze({

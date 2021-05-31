@@ -100,6 +100,22 @@ func (s *BotService) SendPrize(botUID string, user *model.User, prize encode.Cli
 	return bot, err
 }
 
+func (s *BotService) SendPrize2(botUID string, user *model.User, prize encode.ClientPacket) (*models.Bot, error) {
+
+	bot, err := s.botRepository.Find(botUID, user.ID)
+
+	if bot.UserID != user.ID || err != nil {
+		return nil, errors.ErrRecordNotFound
+	}
+
+	gs := ws.NewSocketWithPrize(bot, &prize)
+	gs.Go()
+
+	err = s.botRepository.Update(bot)
+
+	return bot, err
+}
+
 // UpdateBot ...
 func (s *BotService) UpdateBot(bot *models.Bot) error {
 	return s.botRepository.Update(bot)

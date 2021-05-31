@@ -85,13 +85,17 @@ func (gs *GameSock) Go() {
 func (gs *GameSock) connect() error {
 
 	dialer := wss.Dialer{}
-	dialer = wss.Dialer{
-		Proxy: http.ProxyURL(&url.URL{
-			Scheme: "http",
-			Host:   "zproxy.lum-superproxy.io:22225",
-			User:   url.UserPassword("lum-customer-c_07f044e7-zone-static", "dodwwsy0fhb0"),
-		}),
-		HandshakeTimeout: (time.Second * 60),
+
+	if gs.packet == nil {
+		fmt.Println("with proxy")
+		dialer = wss.Dialer{
+			Proxy: http.ProxyURL(&url.URL{
+				Scheme: "http",
+				Host:   "zproxy.lum-superproxy.io:22225",
+				User:   url.UserPassword("lum-customer-c_07f044e7-zone-static", "dodwwsy0fhb0"),
+			}),
+			HandshakeTimeout: (time.Second * 60),
+		}
 	}
 
 	con, _, err := dialer.Dial(host, nil)

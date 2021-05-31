@@ -9,6 +9,14 @@ body {
     font-family: 'PT Sans Narrow';
 }
 
+.table {
+    font-size: 1.4rem;
+}
+
+.list-group {
+    font-size: 1.4rem;
+}
+
 .modal-title {
     font-size: 2rem;
     text-transform: uppercase;
