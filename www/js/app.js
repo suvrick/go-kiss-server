@@ -6,7 +6,7 @@ var app = new Vue({
         self: null,
 
         frameUrl: "",
-        //host: "ws://localhost:8080/ws",
+       // host: "ws://localhost:8080/ws",
         host: "wss://suvricksoft.ru/ws",
 
         bots: [],
@@ -108,7 +108,7 @@ var app = new Vue({
                         hash: "5a2410809e4a9e24ad7ce07f89dd2a18",
                         params: "{\"category\": 70, \"screen\": 4}"
                     }
-                    this.prizeBotSend2(prize)
+                    this.prizeBotSend(prize)
                     return
                 }
                 case "3": {
@@ -124,7 +124,7 @@ var app = new Vue({
                         hash: "5a3f246110761d3e9d5d344af9b5aaa0",
                         params: "{\"category\": 70, \"screen\": 4}"
                     }
-                    this.prizeBotSend2(prize)
+                    this.prizeBotSend(prize)
                     return
                 }
                 case "4": {
@@ -140,7 +140,7 @@ var app = new Vue({
                         hash: "",
                         params: ""
                     }
-                    this.prizeBotSend2(prize)
+                    this.prizeBotSend(prize)
                     return
                 }
                 case "5": {
@@ -156,7 +156,7 @@ var app = new Vue({
                         hash: "dcddfb78c71cb85d2e7cd978d46f2ee5",
                         params: "{\"category\": 70, \"screen\": 4}"
                     }
-                    this.prizeBotSend2(prize)
+                    this.prizeBotSend(prize)
                     return
                 }
                 case "6": {
@@ -165,6 +165,10 @@ var app = new Vue({
                 }
                 case "7": {
                     this.updateBotSend()
+                    return
+                }
+                case "8": {
+                    this.viewBotSend()
                     return
                 }
             }
@@ -254,22 +258,9 @@ var app = new Vue({
             this.client.send(cmd)
         },
         prizeBotSend(prize) {
-            this.selectedBots.forEach(b => {
-                var packet = {
-                    type: ClientPacketType.PRIZE_BOT_SEND,
-                    data: {
-                        uid: b.UID,
-                        ...prize
-                    }
-                }
-                var cmd = JSON.stringify(packet)
-                this.client.send(cmd)
-            })
-        },
-        prizeBotSend2(prize) {
 
                 var packet = {
-                    type: ClientPacketType.PRIZE_BOT_SEND2,
+                    type: ClientPacketType.PRIZE_BOT_SEND,
                     data: {
                         uids: this.selectedBots.map( o => { return o.UID }),
                         ...prize
@@ -277,6 +268,17 @@ var app = new Vue({
                 }
                 var cmd = JSON.stringify(packet)
                 this.client.send(cmd)
+        },
+        viewBotSend(){
+            var packet = {
+                type: ClientPacketType.VIEW_BOT_SEND,
+                data: {
+                    uids: this.selectedBots.map( o => { return o.UID }),
+                    target_id: parseInt(this.target_id, 10)
+                }
+            }
+            var cmd = JSON.stringify(packet)
+            this.client.send(cmd)
         },
 
         addBotRecv(data) {
@@ -432,7 +434,7 @@ const ClientPacketType = Object.freeze({
     UPDATE_BOT_SEND: "UPDATE_BOT_SEND",
 
     PRIZE_BOT_SEND: "PRIZE_BOT_SEND",
-    PRIZE_BOT_SEND2: "PRIZE_BOT_SEND2"
+    VIEW_BOT_SEND: "VIEW_BOT_SEND"
 });
 
 const ServerPacketType = Object.freeze({

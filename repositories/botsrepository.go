@@ -28,9 +28,11 @@ func (repo *BotRepository) Add(bot *models.Bot) (string, error) {
 
 // Update ...
 func (repo *BotRepository) Update(bot *models.Bot) error {
+	nb := &models.Bot{}
+	repo.db.First(nb, "uid = ?", bot.UID)
 
 	logs := make([]models.LoggerLine, 0)
-	repo.db.Table("logger_lines").Where("bot_id = ?", bot.ID).Delete(&logs)
+	repo.db.Table("logger_lines").Where("bot_id = ?", nb.ID).Delete(&logs)
 
 	bot.LastUseDay = time.Now().Format(until.TIME_FORMAT)
 	return repo.db.Preload("Logger").Save(bot).Error

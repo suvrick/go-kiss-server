@@ -47,7 +47,7 @@ func NewSocket(b *models.Bot) *GameSock {
 // NewSocket созадает и заполняет новую структуру
 // p - ссылка на Player
 // updater - канал типа Player
-func NewSocketWithPrize(b *models.Bot, p *encode.ClientPacket) *GameSock {
+func NewSocketWithAdditionPacket(b *models.Bot, p *encode.ClientPacket) *GameSock {
 
 	gs := &GameSock{
 		client: nil,
@@ -63,10 +63,10 @@ func NewSocketWithPrize(b *models.Bot, p *encode.ClientPacket) *GameSock {
 // Go start game
 func (gs *GameSock) Go() {
 
-	if gs.bot.IsError {
-		gs.close()
-		return
-	}
+	//if gs.bot.IsError {
+	//	gs.close()
+	//	return
+	//}
 
 	gs.bot.LogINFO("Go", "Try connection")
 	err := gs.connect()

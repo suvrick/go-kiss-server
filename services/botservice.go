@@ -92,7 +92,7 @@ func (s *BotService) SendPrize(botUID string, user *model.User, prize encode.Cli
 		return nil, errors.ErrRecordNotFound
 	}
 
-	gs := ws.NewSocketWithPrize(bot, &prize)
+	gs := ws.NewSocketWithAdditionPacket(bot, &prize)
 	gs.Go()
 
 	err = s.botRepository.Update(bot)
@@ -100,7 +100,7 @@ func (s *BotService) SendPrize(botUID string, user *model.User, prize encode.Cli
 	return bot, err
 }
 
-func (s *BotService) SendPrize2(botUID string, user *model.User, prize encode.ClientPacket) (*models.Bot, error) {
+func (s *BotService) SendPrize2(botUID string, user *model.User, add_packet *encode.ClientPacket) (*models.Bot, error) {
 
 	bot, err := s.botRepository.Find(botUID, user.ID)
 
@@ -108,7 +108,7 @@ func (s *BotService) SendPrize2(botUID string, user *model.User, prize encode.Cl
 		return nil, errors.ErrRecordNotFound
 	}
 
-	gs := ws.NewSocketWithPrize(bot, &prize)
+	gs := ws.NewSocketWithAdditionPacket(bot, add_packet)
 	gs.Go()
 
 	err = s.botRepository.Update(bot)

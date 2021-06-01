@@ -16,14 +16,17 @@ func (gs *GameSock) loginReceive(msg io.Reader) bool {
 	gs.bot.LogINFO("LoginServerPacket", "Try parse server packet")
 
 	login := server.LoginServerPacket{}
-	if err := login.Parse(msg); err != nil {
+
+	err := login.Parse(msg)
+
+	gs.bot.Result = login.Result.ToString()
+	gs.bot.LogINFO("LoginServerPacket", fmt.Sprintf("Set login status: %v", gs.bot.Result))
+
+	if err != nil {
 		gs.bot.IsError = true
 		gs.bot.LogERROR("LoginServerPacket", "Error parse packet")
 		return false
 	}
-
-	gs.bot.Result = "SUCCESS"
-	gs.bot.LogINFO("LoginServerPacket", fmt.Sprintf("Set login status: %v", login.Result.ToString()))
 
 	if server.LOGIN_SUCCESS == login.Result {
 

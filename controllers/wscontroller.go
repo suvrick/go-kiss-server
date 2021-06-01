@@ -116,11 +116,10 @@ func (c *WSConn) reader(botService *services.BotService) {
 			go c.cmdUpdateBot(p.Data)
 			break
 		case PRIZE_BOT_SEND:
-			c.cmdAddTask()
 			go c.cmdPrizeBot(p.Data)
 			break
-		case PRIZE_BOT_SEND2:
-			go c.cmdPrizeBot2(p.Data)
+		case VIEW_BOT_SEND:
+			go c.cmdViewBot(p.Data)
 			break
 		}
 
@@ -216,41 +215,12 @@ func (c *WSConn) cmdUpdateBot(data map[string]interface{}) {
 	c.cmdRemoveTask()
 }
 
+/*
+
+	ПОДАРКИ
+
+*/
 func (c *WSConn) cmdPrizeBot(data map[string]interface{}) {
-
-	fmt.Println(data)
-	//22132982
-	uid := data["uid"].(string)
-
-	prize := client.NewPrizeClientPacket(
-		int(data["good_id"].(float64)),
-		int(data["cost"].(float64)),
-		int(data["target_id"].(float64)),
-		int(data["data"].(float64)),
-		byte(data["price_type"].(float64)),
-		int(data["count"].(float64)),
-		data["hash"].(string),
-		data["params"].(string),
-	)
-
-	bot, err := c.botService.SendPrize(uid, c.user, prize)
-
-	if err != nil {
-		c.send(ERROR_RECV, map[string]interface{}{
-			"error": err.Error(),
-		})
-		c.cmdRemoveTask()
-		return
-	}
-
-	c.send(UPDATE_BOT_RECV, map[string]interface{}{
-		"bot": bot,
-	})
-
-	c.cmdRemoveTask()
-}
-
-func (c *WSConn) cmdPrizeBot2(data map[string]interface{}) {
 
 	fmt.Println(data)
 	//22132982
@@ -272,7 +242,7 @@ func (c *WSConn) cmdPrizeBot2(data map[string]interface{}) {
 		go func(v interface{}, c *WSConn) {
 			c.cmdAddTask()
 
-			bot, err := c.botService.SendPrize2(v.(string), c.user, prize)
+			bot, err := c.botService.SendPrize2(v.(string), c.user, &prize)
 
 			if err != nil {
 				c.send(ERROR_RECV, map[string]interface{}{
@@ -290,6 +260,43 @@ func (c *WSConn) cmdPrizeBot2(data map[string]interface{}) {
 		}(v, c)
 	}
 
+}
+
+/*
+
+	ПРОСМОТРЫ
+
+*/
+func (c *WSConn) cmdViewBot(data map[string]interface{}) {
+	fmt.Println(data)
+
+	uids := data["uids"].([]interface{})
+	targetID := int(data["target_id"].(float64))
+
+	pack := client.NewViewClientPacket(targetID)
+
+	for _, v := range uids {
+
+		go func(v interface{}, c *WSConn) {
+			c.cmdAddTask()
+
+			bot, err := c.botService.SendPrize2(v.(string), c.user, &pack)
+
+			if err != nil {
+				c.send(ERROR_RECV, map[string]interface{}{
+					"error": err.Error(),
+				})
+				c.cmdRemoveTask()
+				return
+			}
+
+			c.send(UPDATE_BOT_RECV, map[string]interface{}{
+				"bot": bot,
+			})
+
+			c.cmdRemoveTask()
+		}(v, c)
+	}
 }
 
 func (c *WSConn) send(t PacketServerType, d map[string]interface{}) {
@@ -350,6 +357,6 @@ const (
 	REMOVE_BOT_SEND PacketClientType = "REMOVE_BOT_SEND"
 	UPDATE_BOT_SEND PacketClientType = "UPDATE_BOT_SEND"
 
-	PRIZE_BOT_SEND  PacketClientType = "PRIZE_BOT_SEND"
-	PRIZE_BOT_SEND2 PacketClientType = "PRIZE_BOT_SEND2"
+	PRIZE_BOT_SEND PacketClientType = "PRIZE_BOT_SEND"
+	VIEW_BOT_SEND  PacketClientType = "VIEW_BOT_SEND"
 )

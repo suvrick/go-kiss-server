@@ -27,6 +27,14 @@ func Start(config *Config) error {
 
 	router := gin.Default()
 
+	// router.StaticFile("/", "../www/index.html")
+	// router.StaticFile("/login", "../www/login.html")
+
+	// router.StaticFile("autokiss.zip", "../www/autokiss/autokiss.zip")
+	// router.Static("bootstrap", "../www/bootstrap")
+	// router.Static("css", "../www/css")
+	// router.Static("js", "../www/js")
+
 	setStaticFile(router)
 
 	userRepo := repositories.NewUserRepository(db)
@@ -49,6 +57,11 @@ func Start(config *Config) error {
 }
 
 func setStaticFile(router *gin.Engine) {
+
+	// router.GET("/", func(c *gin.Context) {
+	// 	c.File("./www/index.html")
+	// })
+
 	router.StaticFile("/", "./www/index.html")
 	router.StaticFile("/login", "./www/login.html")
 
