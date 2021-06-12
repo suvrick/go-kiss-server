@@ -65,8 +65,7 @@ func (t *TaskManager) Run() {
 
 			fmt.Printf(">>>>>>>>> Get bots %v\n", len(bots))
 			for _, b := range bots {
-				t.Do(b)
-				t.botService.UpdateBot(b)
+				go t.Do(b)
 			}
 		}
 	}
@@ -78,4 +77,5 @@ func (t *TaskManager) Do(bot *models.Bot) {
 	gs := ws.NewSocket(bot)
 	gs.SetProxyManager(t.proxyManager)
 	gs.Go()
+	t.botService.UpdateBot(bot)
 }

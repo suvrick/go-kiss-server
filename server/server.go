@@ -81,7 +81,7 @@ func Start(config *Config) error {
 	taskServer := tasks.NewTaskManager(60, userService, botService, proxyRepo)
 	go taskServer.Run()
 
-	return http.ListenAndServeTLS(":443", "../certs/cert.crt", "../certs/pk.key", router)
+	return http.ListenAndServeTLS(":443", "../../certs/cert.crt", "../../certs/pk.key", router)
 	//return router.Run(config.BindAddr)
 }
 
