@@ -15,19 +15,20 @@ import (
 
 // BotService ...
 type BotService struct {
-	userService   *UserService
-	botRepository *repositories.BotRepository
+	userService     *UserService
+	botRepository   *repositories.BotRepository
+	proxyRepository *repositories.ProxyRepository
 
 	locker *sync.Mutex
 }
 
 // NewBotService ...
-func NewBotService(repo *repositories.BotRepository, us *UserService) *BotService {
+func NewBotService(repo *repositories.BotRepository, us *UserService, pr *repositories.ProxyRepository) *BotService {
 	return &BotService{
-		userService:   us,
-		botRepository: repo,
-
-		locker: &sync.Mutex{},
+		userService:     us,
+		botRepository:   repo,
+		proxyRepository: pr,
+		locker:          &sync.Mutex{},
 	}
 }
 
@@ -50,6 +51,7 @@ func (s *BotService) Add(user *model.User, url string) (*models.Bot, error) {
 	}
 
 	gs := ws.NewSocket(bot)
+	gs.SetProxyManager(s.proxyRepository)
 	gs.Go()
 
 	_, err := s.botRepository.Add(bot)
@@ -75,6 +77,7 @@ func (s *BotService) UpdateByID(botUID string, user *model.User) (*models.Bot, e
 	}
 
 	gs := ws.NewSocket(bot)
+	gs.SetProxyManager(s.proxyRepository)
 	gs.Go()
 
 	err = s.botRepository.Update(bot)

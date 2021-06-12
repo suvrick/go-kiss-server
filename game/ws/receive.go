@@ -76,6 +76,8 @@ func (gs *GameSock) gameListRewardsReceive(msg io.Reader) int32 {
 		gs.bot.LogERROR("GameRewardsListServerPacket", "Error parse packet")
 	}
 
+	gs.bot.LogINFO("GameRewardsListServerPacket", rewardsList.Json)
+
 	type Content struct {
 		Coints int `json:"coins"`
 	}

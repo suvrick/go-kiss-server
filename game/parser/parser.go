@@ -8,7 +8,6 @@ import (
 	"fmt"
 	"log"
 	"net/url"
-	"strconv"
 	"strings"
 )
 
@@ -27,7 +26,7 @@ type LoginParams struct {
 	SocialCode int16
 	//двухбуквеный код социалки
 	SocialName string
-	LoginID    int64
+	LoginID    string
 	Token      string
 	Token2     string
 	FrameURL   string `json:"-"`
@@ -98,19 +97,16 @@ func NewLoginParams(input string) *LoginParams {
 	*/
 
 	for _, p := range parseParams {
+
+		fmt.Println(p)
+
 		if strings.Contains(input, p.ID) &&
 			strings.Contains(input, p.Token) &&
 			strings.Contains(input, p.Token2) {
 
 			p.Debug(input)
 
-			strID := query.Get(p.ID)
-			loginID, err := strconv.ParseInt(strID, 10, 64)
-			if err != nil || loginID == 0 {
-				return params
-			}
-
-			params.LoginID = loginID
+			params.LoginID = query.Get(p.ID)
 			params.SocialName = p.SType
 			params.SocialCode = p.STypeCode
 			params.Token = query.Get(p.Token)
@@ -126,12 +122,12 @@ func NewLoginParams(input string) *LoginParams {
 
 // GetUID возращаем уникальный индификатор для Player
 func (lp *LoginParams) GetUID() string {
-	return fmt.Sprintf("%s%d", lp.SocialName, lp.LoginID)
+	return fmt.Sprintf("%s%s", lp.SocialName, lp.LoginID)
 }
 
 // ToString конвертирует структуру LoginParams в строку
 func (lp *LoginParams) ToString() string {
-	return fmt.Sprintf(" Social type: %s\n LoginID: %d\n Token: %s\n Token2: %s\n",
+	return fmt.Sprintf(" Social type: %s\n LoginID: %s\n Token: %s\n Token2: %s\n",
 		lp.SocialName,
 		lp.LoginID,
 		lp.Token,

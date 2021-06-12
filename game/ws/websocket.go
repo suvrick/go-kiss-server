@@ -7,6 +7,7 @@ import (
 	"log"
 	"net/http"
 	"net/url"
+	"strings"
 	"time"
 
 	"github.com/suvrick/go-kiss-server/game/models"
@@ -16,6 +17,11 @@ import (
 	wss "github.com/gorilla/websocket"
 )
 
+type IProxyManager interface {
+	GetString() (string, error)
+	UpdateString(host string, isError bool) error
+}
+
 // GameSock ...
 type GameSock struct {
 	client         *wss.Conn
@@ -23,8 +29,9 @@ type GameSock struct {
 	bot            *models.Bot
 	botChanUpdater chan *models.Bot
 
-	packet *encode.ClientPacket
-	debug  bool
+	packet       *encode.ClientPacket
+	proxyManager IProxyManager
+	debug        bool
 }
 
 const host = "wss://bottlews.itsrealgames.com"
@@ -60,6 +67,10 @@ func NewSocketWithAdditionPacket(b *models.Bot, p *encode.ClientPacket) *GameSoc
 	return gs
 }
 
+func (gs *GameSock) SetProxyManager(p IProxyManager) {
+	gs.proxyManager = p
+}
+
 // Go start game
 func (gs *GameSock) Go() {
 
@@ -67,6 +78,9 @@ func (gs *GameSock) Go() {
 	//	gs.close()
 	//	return
 	//}
+
+	//cleat logger
+	gs.bot.Logger = make([]models.LoggerLine, 0)
 
 	gs.bot.LogINFO("Go", "Try connection")
 	err := gs.connect()
@@ -84,22 +98,45 @@ func (gs *GameSock) Go() {
 
 func (gs *GameSock) connect() error {
 
-	dialer := wss.Dialer{}
+	var dialer wss.Dialer
+	var array []string
 
-	if gs.packet == nil {
-		fmt.Println("with proxy")
+	if gs.proxyManager != nil && gs.packet == nil {
+
+		proxy, err := gs.proxyManager.GetString()
+
+		if err != nil {
+			return err
+		}
+
+		array = strings.Split(proxy, ":")
+
+		if len(array) != 4 {
+			return errors.New("invalid proxy")
+		}
+
 		dialer = wss.Dialer{
 			Proxy: http.ProxyURL(&url.URL{
 				Scheme: "http",
-				Host:   "zproxy.lum-superproxy.io:22225",
-				User:   url.UserPassword("lum-customer-c_07f044e7-zone-static", "dodwwsy0fhb0"),
+				Host:   fmt.Sprintf("%s:%s", array[0], array[1]),
+				User:   url.UserPassword(array[2], array[3]),
 			}),
 			HandshakeTimeout: (time.Second * 60),
 		}
+
+		gs.bot.LogINFO("connect", fmt.Sprintf("Set proxy %s", array[2]))
+	} else {
+		dialer = wss.Dialer{}
 	}
 
 	con, _, err := dialer.Dial(host, nil)
 
+	if err != nil {
+		gs.proxyManager.UpdateString(array[2], true)
+		return gs.connect()
+	}
+
+	//gs.proxyManager.UpdateString(array[2], false)
 	gs.client = con
 	return err
 }
@@ -155,16 +192,12 @@ func (gs *GameSock) readMessage() {
 		case 13:
 			id := gs.gameListRewardsReceive(reader)
 			if id == 0 {
-				gs.bot.IsError = false
-				gs.close()
 				return
 			}
 
 			gs.getRewardSend(id)
-		case 250:
-			{
-				fmt.Println(msg)
-			}
+		case 9:
+			gs.close()
 		case 17:
 			gs.bonusReceive(reader)
 		}

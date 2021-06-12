@@ -49,7 +49,7 @@ func (r *UserRepository) FindByEmailAndPass(email, password string) (*model.User
 	return user, result.Error
 }
 
-// FindByKey ...
+// All ...
 func (r *UserRepository) All() ([]model.User, error) {
 	users := make([]model.User, 0)
 	result := r.db.Table("users").Where("ID != ?", 0).Scan(&users)

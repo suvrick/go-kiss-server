@@ -6,7 +6,7 @@ var app = new Vue({
         self: null,
 
         frameUrl: "",
-       // host: "ws://localhost:8080/ws",
+        //host: "ws://localhost:8080/ws",
         host: "wss://suvricksoft.ru/ws",
 
         bots: [],
@@ -411,6 +411,7 @@ var app = new Vue({
 
             this.client.onerror = function (error) {
                 console.log("socket error:", error)
+                location.href = '/login'
             };
         }
     },

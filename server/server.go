@@ -1,6 +1,7 @@
 package server
 
 import (
+	"fmt"
 	"log"
 	"net/http"
 
@@ -27,29 +28,57 @@ func Start(config *Config) error {
 
 	router := gin.Default()
 
-	// router.StaticFile("/", "../www/index.html")
-	// router.StaticFile("/login", "../www/login.html")
+	router.GET("/", func(c *gin.Context) {
+		c.File("../www/index.html")
+	})
 
-	// router.StaticFile("autokiss.zip", "../www/autokiss/autokiss.zip")
-	// router.Static("bootstrap", "../www/bootstrap")
-	// router.Static("css", "../www/css")
-	// router.Static("js", "../www/js")
+	router.GET("/login", func(c *gin.Context) {
+		c.File("../www/login.html")
+	})
 
-	setStaticFile(router)
+	router.Static("bootstrap", "../www/bootstrap")
+	router.Static("css", "../www/css")
+	router.Static("js", "../www/js")
+
+	//setStaticFile(router)
 
 	userRepo := repositories.NewUserRepository(db)
 	botRepo := repositories.NewBotRepository(db)
+	proxyRepo := repositories.NewProxyRepository(db)
 
 	session.SetDb(userRepo)
 
 	userService := services.NewUserService(userRepo)
-	botService := services.NewBotService(botRepo, userService)
+	botService := services.NewBotService(botRepo, userService, proxyRepo)
 
 	controllers.NewUserController(router, userService)
 	controllers.NewAdminController(router, userService)
 	controllers.NewWsController(router, userService, botService)
 
-	taskServer := tasks.NewTaskManager(60*6*2, userService, botService)
+	router.POST("proxy/add", func(c *gin.Context) {
+		type FormData struct {
+			Proxies []string `json:"proxies"`
+		}
+
+		data := FormData{}
+
+		if err := c.ShouldBindJSON(&data); err != nil {
+			fmt.Println(err.Error())
+			return
+		}
+
+		for _, u := range data.Proxies {
+			p, err := repositories.NewProxy(u)
+			if err != nil {
+				continue
+			}
+
+			proxyRepo.Add(p)
+		}
+
+	})
+
+	taskServer := tasks.NewTaskManager(60, userService, botService, proxyRepo)
 	go taskServer.Run()
 
 	return http.ListenAndServeTLS(":443", "../certs/cert.crt", "../certs/pk.key", router)
@@ -58,14 +87,9 @@ func Start(config *Config) error {
 
 func setStaticFile(router *gin.Engine) {
 
-	// router.GET("/", func(c *gin.Context) {
-	// 	c.File("./www/index.html")
-	// })
-
 	router.StaticFile("/", "./www/index.html")
 	router.StaticFile("/login", "./www/login.html")
 
-	router.StaticFile("autokiss.zip", "./www/autokiss/autokiss.zip")
 	router.Static("bootstrap", "./www/bootstrap")
 	router.Static("css", "./www/css")
 	router.Static("js", "./www/js")
@@ -85,6 +109,8 @@ func createDB(dbURL string) (*gorm.DB, error) {
 	db.AutoMigrate(&model.User{})
 	db.AutoMigrate(&models.Bot{})
 	db.AutoMigrate(&models.LoggerLine{})
+
+	db.AutoMigrate(&repositories.Proxy{})
 
 	return db, err
 }

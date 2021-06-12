@@ -120,6 +120,7 @@ func NewBot(url string) *Bot {
 
 // NewBotWhitProxy ...
 func NewBotWhitProxy(url string, proxy string) *Bot {
+	_ = proxy
 
 	bot := &Bot{
 

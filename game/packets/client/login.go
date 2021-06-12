@@ -1,6 +1,9 @@
 package client
 
 import (
+	"fmt"
+	"strconv"
+
 	"github.com/suvrick/go-kiss-server/game/packets/encode"
 	"github.com/suvrick/go-kiss-server/game/parser"
 )
@@ -13,7 +16,7 @@ import (
 type LoginClientPacket struct {
 	Type        int16
 	DeviceType  byte
-	ID          int64
+	ID          uint64
 	SocialType  byte
 	DeviceType2 byte
 	Token       string
@@ -37,10 +40,16 @@ func NewLoginClientPacket(login *parser.LoginParams) encode.ClientPacket {
 		isOAuth = 1
 	}
 
+	id, err := strconv.ParseUint(login.LoginID, 10, 64)
+
+	if err != nil {
+		fmt.Printf("Error from %s.Param %s.%s", "NewLoginClientPacket", login.LoginID, err.Error())
+	}
+
 	return &LoginClientPacket{
 		Type:        4,
 		DeviceType:  0x04,
-		ID:          login.LoginID,
+		ID:          id,
 		SocialType:  uint8(login.SocialCode),
 		DeviceType2: 0x04,
 		Token:       login.Token,
