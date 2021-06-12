@@ -65,7 +65,7 @@ func (t *TaskManager) Run() {
 
 			fmt.Printf(">>>>>>>>> Get bots %v\n", len(bots))
 			for _, b := range bots {
-				go t.Do(b)
+				t.Do(b)
 			}
 		}
 	}

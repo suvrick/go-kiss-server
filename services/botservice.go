@@ -50,9 +50,9 @@ func (s *BotService) Add(user *model.User, url string) (*models.Bot, error) {
 		return nil, errors.ErrParseBotInvalid
 	}
 
-	gs := ws.NewSocket(bot)
-	gs.SetProxyManager(s.proxyRepository)
-	gs.Go()
+	// gs := ws.NewSocket(bot)
+	// gs.SetProxyManager(s.proxyRepository)
+	// gs.Go()
 
 	_, err := s.botRepository.Add(bot)
 
