@@ -98,7 +98,7 @@ func NewLoginParams(input string) *LoginParams {
 
 	for _, p := range parseParams {
 
-		fmt.Println(p)
+		//fmt.Println(p)
 
 		if strings.Contains(input, p.ID) &&
 			strings.Contains(input, p.Token) &&

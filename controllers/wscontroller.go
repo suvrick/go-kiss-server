@@ -97,7 +97,7 @@ func (c *WSConn) reader(botService *services.BotService) {
 			continue
 		}
 
-		fmt.Println(p)
+		//fmt.Println(p)
 
 		switch p.Type {
 		case ALL_BOT_SEND:
@@ -222,7 +222,7 @@ func (c *WSConn) cmdUpdateBot(data map[string]interface{}) {
 */
 func (c *WSConn) cmdPrizeBot(data map[string]interface{}) {
 
-	fmt.Println(data)
+	//fmt.Println(data)
 	//22132982
 	uids := data["uids"].([]interface{})
 

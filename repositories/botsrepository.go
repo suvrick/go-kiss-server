@@ -31,8 +31,7 @@ func (repo *BotRepository) Update(bot *models.Bot) error {
 	nb := &models.Bot{}
 	repo.db.First(nb, "uid = ?", bot.UID)
 
-	logs := make([]models.LoggerLine, 0)
-	repo.db.Table("logger_lines").Where("bot_id = ?", nb.ID).Delete(&logs)
+	repo.db.Unscoped().Table("logger_lines").Where("bot_id", nb.ID).Delete(&[]models.LoggerLine{})
 
 	bot.LastUseDay = time.Now().Format(until.TIME_FORMAT)
 	return repo.db.Preload("Logger").Save(bot).Error
@@ -54,5 +53,6 @@ func (repo *BotRepository) Find(botUID string, userID int) (*models.Bot, error) 
 
 // Delete ...
 func (repo *BotRepository) Delete(bot *models.Bot) error {
-	return repo.db.Preload("Logger").Where("uid = ?", bot.UID).Delete(bot).Error
+	repo.db.Unscoped().Table("logger_lines").Where("bot_id", bot.ID).Delete(&[]models.LoggerLine{})
+	return repo.db.Unscoped().Where("uid = ?", bot.UID).Delete(&models.Bot{}).Error
 }

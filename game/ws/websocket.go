@@ -92,6 +92,17 @@ func (gs *GameSock) Go() {
 		return
 	}
 
+	go func(g *GameSock) {
+		time.Sleep(time.Minute * time.Duration(5))
+
+		if g == nil {
+			return
+		}
+
+		g.bot.LogERROR("Go", "close socket by timeout")
+		g.close()
+	}(gs)
+
 	gs.loginSend()
 	gs.readMessage()
 }
@@ -171,6 +182,8 @@ func (gs *GameSock) readMessage() {
 			log.Printf("Recv >> msgType: %d,msgID: %d, msgLen: %d", msgType, msgID, msgLen)
 		}
 
+		//log.Printf("Recv >> msgType: %d,msgID: %d, msgLen: %d", msgType, msgID, msgLen)
+
 		switch msgType {
 		case 4:
 			ok := gs.loginReceive(reader)
@@ -192,11 +205,12 @@ func (gs *GameSock) readMessage() {
 		case 13:
 			id := gs.gameListRewardsReceive(reader)
 			if id == 0 {
-				return
+				continue
 			}
 
 			gs.getRewardSend(id)
-		case 9:
+		case 200:
+			//gs.closeSend()
 			gs.close()
 		case 17:
 			gs.bonusReceive(reader)

@@ -6,8 +6,8 @@ var app = new Vue({
         self: null,
 
         frameUrl: "",
-        host: "ws://localhost:8080/ws",
-        //host: "wss://suvricksoft.ru/ws",
+        //host: "ws://localhost:8080/ws",
+        host: "wss://suvricksoft.ru/ws",
 
         bots: [],
         botsContainer: [],
@@ -101,10 +101,10 @@ var app = new Vue({
                     let prize = {
                         good_id: 2,
                         cost: 1,
-                        target_id: parseInt(this.target_id, 10) ?? 0,
+                        target_id: parseInt(this.target_id, 10),
                         data: 9845,
                         price_type: 0,
-                        count: parseInt(this.count, 10) ?? 1,
+                        count: parseInt(this.count, 10),
                         hash: "5a2410809e4a9e24ad7ce07f89dd2a18",
                         params: "{\"category\": 70, \"screen\": 4}"
                     }
@@ -117,10 +117,10 @@ var app = new Vue({
                     let prize = {
                         good_id: 2,
                         cost: 1,
-                        target_id: parseInt(this.target_id, 10) ?? 0,
+                        target_id: parseInt(this.target_id, 10),
                         data: 10120,
                         price_type: 0,
-                        count: parseInt(this.count, 10) ?? 1,
+                        count: parseInt(this.count, 10),
                         hash: "5a3f246110761d3e9d5d344af9b5aaa0",
                         params: "{\"category\": 70, \"screen\": 4}"
                     }
@@ -133,10 +133,10 @@ var app = new Vue({
                     let prize = {
                         good_id: 1,
                         cost: 3,
-                        target_id: parseInt(this.target_id, 10) ?? 0,
+                        target_id: parseInt(this.target_id, 10),
                         data: 0,
                         price_type: 0,
-                        count: parseInt(this.count, 10) ?? 1,
+                        count: parseInt(this.count, 10),
                         hash: "",
                         params: ""
                     }
@@ -149,10 +149,10 @@ var app = new Vue({
                     let prize = {
                         good_id: 2,
                         cost: 1,
-                        target_id: parseInt(this.target_id, 10) ?? 0,
+                        target_id: parseInt(this.target_id, 10),
                         data: 10125,
                         price_type: 0,
-                        count: parseInt(this.count, 10) ?? 1,
+                        count: parseInt(this.count, 10),
                         hash: "dcddfb78c71cb85d2e7cd978d46f2ee5",
                         params: "{\"category\": 70, \"screen\": 4}"
                     }
@@ -258,6 +258,12 @@ var app = new Vue({
             this.client.send(cmd)
         },
         prizeBotSend(prize) {
+
+            if (!prize.target_id) {
+                console.log("Null targetID")
+                this.selectedBots = []
+                return
+            }
 
                 var packet = {
                     type: ClientPacketType.PRIZE_BOT_SEND,

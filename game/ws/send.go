@@ -19,6 +19,7 @@ func (gs *GameSock) bonusSend() {
 }
 
 func (gs *GameSock) additionPacketSend() {
+
 	gs.bot.LogINFO("additionPacketSend", "Try send addiction packet send")
 	gs.sendMessage(*gs.packet)
 }
@@ -38,5 +39,11 @@ func (gs *GameSock) getRewardSend(id int32) {
 func (gs *GameSock) postAwardsSend() {
 	gs.bot.LogINFO("postAwardsSend", "Try send post award")
 	data := client.NewPostAwardsClientPacket()
+	gs.sendMessage(data)
+}
+
+func (gs *GameSock) closeSend() {
+	gs.bot.LogINFO("closeSend", "send packet by close socket")
+	data := client.NewCloseClientPacket()
 	gs.sendMessage(data)
 }
