@@ -66,7 +66,7 @@ func NewSocketWithAdditionPacket(b *models.Bot, p []*encode.ClientPacket) *GameS
 		client:  nil,
 		msgID:   0,
 		bot:     b,
-		debug:   true,
+		debug:   false,
 		packets: p,
 	}
 

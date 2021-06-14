@@ -127,20 +127,47 @@ func (c *WSConn) reader(botService *services.BotService) {
 }
 
 func (c *WSConn) cmdSelf() {
+
+	defer func() {
+		msg := recover()
+		if msg != nil {
+			log.Println(msg)
+		}
+	}()
+
 	c.send(SELF_RECV, map[string]interface{}{
 		"user": c.user,
 	})
 }
 
 func (c *WSConn) cmdAddTask() {
+	defer func() {
+		msg := recover()
+		if msg != nil {
+			log.Println(msg)
+		}
+	}()
+
 	c.send(ADD_TASK_RECV, nil)
 }
 
 func (c *WSConn) cmdRemoveTask() {
+	defer func() {
+		msg := recover()
+		if msg != nil {
+			log.Println(msg)
+		}
+	}()
 	c.send(REMOVE_TASK_RECV, nil)
 }
 
 func (c *WSConn) cmdAllBot() {
+	defer func() {
+		msg := recover()
+		if msg != nil {
+			log.Println(msg)
+		}
+	}()
 	bots, err := c.botService.All(c.user)
 
 	if err != nil {
@@ -156,6 +183,13 @@ func (c *WSConn) cmdAllBot() {
 }
 
 func (c *WSConn) cmdAddBot(data map[string]interface{}) {
+
+	defer func() {
+		msg := recover()
+		if msg != nil {
+			log.Println(msg)
+		}
+	}()
 
 	url := data["url"].(string)
 
@@ -177,6 +211,13 @@ func (c *WSConn) cmdAddBot(data map[string]interface{}) {
 }
 
 func (c *WSConn) cmdRemoveBot(data map[string]interface{}) {
+	defer func() {
+		msg := recover()
+		if msg != nil {
+			log.Println(msg)
+		}
+	}()
+
 	uid := data["uid"].(string)
 	err := c.botService.Delete(uid, c.user)
 	if err != nil {
@@ -195,6 +236,12 @@ func (c *WSConn) cmdRemoveBot(data map[string]interface{}) {
 }
 
 func (c *WSConn) cmdUpdateBot(data map[string]interface{}) {
+	defer func() {
+		msg := recover()
+		if msg != nil {
+			log.Println(msg)
+		}
+	}()
 
 	uid := data["uid"].(string)
 
@@ -221,6 +268,12 @@ func (c *WSConn) cmdUpdateBot(data map[string]interface{}) {
 
 */
 func (c *WSConn) cmdPrizeBot(data map[string]interface{}) {
+	defer func() {
+		msg := recover()
+		if msg != nil {
+			log.Println(msg)
+		}
+	}()
 
 	uids := data["uids"].([]interface{})
 
@@ -276,6 +329,12 @@ func (c *WSConn) cmdPrizeBot(data map[string]interface{}) {
 
 */
 func (c *WSConn) cmdViewBot(data map[string]interface{}) {
+	defer func() {
+		msg := recover()
+		if msg != nil {
+			log.Println(msg)
+		}
+	}()
 
 	uids := data["uids"].([]interface{})
 	targetID, ok := data["target_id"].(float64)
@@ -310,6 +369,13 @@ func (c *WSConn) cmdViewBot(data map[string]interface{}) {
 }
 
 func (c *WSConn) send(t PacketServerType, d map[string]interface{}) {
+	defer func() {
+		msg := recover()
+		if msg != nil {
+			log.Println(msg)
+		}
+	}()
+
 	c.locker.Lock()
 	defer c.locker.Unlock()
 
@@ -318,6 +384,12 @@ func (c *WSConn) send(t PacketServerType, d map[string]interface{}) {
 }
 
 func createServerPacket(t PacketServerType, d map[string]interface{}) []byte {
+	defer func() {
+		msg := recover()
+		if msg != nil {
+			log.Println(msg)
+		}
+	}()
 
 	p := ServerPacket{
 		Type: t,
