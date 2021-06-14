@@ -257,11 +257,11 @@ var app = new Vue({
         },
         prizeBotSend(prize) {
 
-            if (!this.target_id) {
-                console.log("Null targetID")
-                this.selectedBots = []
-                return
-            }
+                if (!this.target_id || !this.count) {
+                    console.log("Null targetID || count")
+                    this.selectedBots = []
+                    return
+                }
 
                 var packet = {
                     type: ClientPacketType.PRIZE_BOT_SEND,
@@ -274,12 +274,13 @@ var app = new Vue({
                 this.client.send(cmd)
         },
         viewBotSend(){
-
-            if (!this.target_id) {
-                console.log("Null targetID")
+            
+            if (!this.target_id || !this.count) {
+                console.log("Null targetID || count")
                 this.selectedBots = []
                 return
             }
+
 
             var packet = {
                 type: ClientPacketType.VIEW_BOT_SEND,

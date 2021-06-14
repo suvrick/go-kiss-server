@@ -85,9 +85,7 @@ func (s *BotService) UpdateByID(botUID string, user *model.User) (*models.Bot, e
 	return bot, err
 }
 
-func (s *BotService) SendPrize(botUID string, user *model.User, prize encode.ClientPacket) (*models.Bot, error) {
-	s.locker.Lock()
-	defer s.locker.Unlock()
+func (s *BotService) SendPrize(botUID string, user *model.User, add_packet *encode.ClientPacket, count int) (*models.Bot, error) {
 
 	bot, err := s.botRepository.Find(botUID, user.ID)
 
@@ -95,23 +93,13 @@ func (s *BotService) SendPrize(botUID string, user *model.User, prize encode.Cli
 		return nil, errors.ErrRecordNotFound
 	}
 
-	gs := ws.NewSocketWithAdditionPacket(bot, &prize)
-	gs.Go()
+	packets := make([]*encode.ClientPacket, 0)
 
-	err = s.botRepository.Update(bot)
-
-	return bot, err
-}
-
-func (s *BotService) SendPrize2(botUID string, user *model.User, add_packet *encode.ClientPacket) (*models.Bot, error) {
-
-	bot, err := s.botRepository.Find(botUID, user.ID)
-
-	if bot.UserID != user.ID || err != nil {
-		return nil, errors.ErrRecordNotFound
+	for i := 0; i < count; i++ {
+		packets = append(packets, add_packet)
 	}
 
-	gs := ws.NewSocketWithAdditionPacket(bot, add_packet)
+	gs := ws.NewSocketWithAdditionPacket(bot, packets)
 	gs.Go()
 
 	err = s.botRepository.Update(bot)

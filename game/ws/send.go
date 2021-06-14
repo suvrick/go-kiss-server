@@ -21,7 +21,9 @@ func (gs *GameSock) bonusSend() {
 func (gs *GameSock) additionPacketSend() {
 
 	gs.bot.LogINFO("additionPacketSend", "Try send addiction packet send")
-	gs.sendMessage(*gs.packet)
+	for _, p := range gs.packets {
+		gs.sendMessage(*p)
+	}
 }
 
 func (gs *GameSock) rewardListSend() {

@@ -29,9 +29,15 @@ type GameSock struct {
 	bot            *models.Bot
 	botChanUpdater chan *models.Bot
 
-	packet       *encode.ClientPacket
+	packets      []*encode.ClientPacket
 	proxyManager IProxyManager
 	debug        bool
+
+	proxyHost     string
+	proxyLogin    string
+	proxyPassword string
+
+	end bool
 }
 
 const host = "wss://bottlews.itsrealgames.com"
@@ -54,14 +60,14 @@ func NewSocket(b *models.Bot) *GameSock {
 // NewSocket созадает и заполняет новую структуру
 // p - ссылка на Player
 // updater - канал типа Player
-func NewSocketWithAdditionPacket(b *models.Bot, p *encode.ClientPacket) *GameSock {
+func NewSocketWithAdditionPacket(b *models.Bot, p []*encode.ClientPacket) *GameSock {
 
 	gs := &GameSock{
-		client: nil,
-		msgID:  0,
-		bot:    b,
-		debug:  false,
-		packet: p,
+		client:  nil,
+		msgID:   0,
+		bot:     b,
+		debug:   true,
+		packets: p,
 	}
 
 	return gs
@@ -74,12 +80,6 @@ func (gs *GameSock) SetProxyManager(p IProxyManager) {
 // Go start game
 func (gs *GameSock) Go() {
 
-	//if gs.bot.IsError {
-	//	gs.close()
-	//	return
-	//}
-
-	//cleat logger
 	gs.bot.Logger = make([]models.LoggerLine, 0)
 
 	gs.bot.LogINFO("Go", "Try connection")
@@ -112,7 +112,7 @@ func (gs *GameSock) connect() error {
 	var dialer wss.Dialer
 	var array []string
 
-	if gs.proxyManager != nil && gs.packet == nil {
+	if gs.proxyManager != nil && gs.packets == nil {
 
 		proxy, err := gs.proxyManager.GetString()
 
@@ -179,10 +179,10 @@ func (gs *GameSock) readMessage() {
 		msgType, _ := decode.ReadVarUint(reader, 16)
 
 		if gs.debug {
-			log.Printf("Recv >> msgType: %d,msgID: %d, msgLen: %d", msgType, msgID, msgLen)
+			log.Printf("Recv >> msgType: %d,msgID: %d, msgLen: %d\n", msgType, msgID, msgLen)
 		}
 
-		//log.Printf("Recv >> msgType: %d,msgID: %d, msgLen: %d", msgType, msgID, msgLen)
+		//fmt.Printf("Recv >> msgType: %d,msgID: %d, msgLen: %d\n", msgType, msgID, msgLen)
 
 		switch msgType {
 		case 4:
@@ -194,7 +194,7 @@ func (gs *GameSock) readMessage() {
 
 			gs.bonusSend()
 
-			if gs.packet != nil {
+			if len(gs.packets) > 0 {
 				gs.additionPacketSend()
 			}
 
@@ -209,9 +209,11 @@ func (gs *GameSock) readMessage() {
 			}
 
 			gs.getRewardSend(id)
-		case 200:
-			//gs.closeSend()
-			gs.close()
+		case 9:
+			go func() {
+				time.Sleep(time.Second * time.Duration(5))
+				gs.close()
+			}()
 		case 17:
 			gs.bonusReceive(reader)
 		}

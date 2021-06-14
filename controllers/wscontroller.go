@@ -240,7 +240,7 @@ func (c *WSConn) cmdPrizeBot(data map[string]interface{}) {
 		int(id),
 		int(data["data"].(float64)),
 		byte(data["price_type"].(float64)),
-		int(count),
+		int(1),
 		data["hash"].(string),
 		data["params"].(string),
 	)
@@ -250,7 +250,7 @@ func (c *WSConn) cmdPrizeBot(data map[string]interface{}) {
 		go func(v interface{}, c *WSConn) {
 			c.cmdAddTask()
 
-			bot, err := c.botService.SendPrize2(v.(string), c.user, &prize)
+			bot, err := c.botService.SendPrize(v.(string), c.user, &prize, int(count))
 
 			if err != nil {
 				c.send(ERROR_RECV, map[string]interface{}{
@@ -290,7 +290,7 @@ func (c *WSConn) cmdViewBot(data map[string]interface{}) {
 		go func(v interface{}, c *WSConn) {
 			c.cmdAddTask()
 
-			bot, err := c.botService.SendPrize2(v.(string), c.user, &pack)
+			bot, err := c.botService.SendPrize(v.(string), c.user, &pack, 1)
 
 			if err != nil {
 				c.send(ERROR_RECV, map[string]interface{}{
