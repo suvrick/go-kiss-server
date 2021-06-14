@@ -19,7 +19,14 @@ import (
 )
 
 // Start ...
-func Start(config *Config) error {
+func Start(config *Config, errMsg *string) error {
+
+	defer func() {
+		if recoveryMessage := recover(); recoveryMessage != nil {
+			log.Println(recoveryMessage)
+			*errMsg = fmt.Sprintf("%v", recoveryMessage)
+		}
+	}()
 
 	db, err := createDB(config.DatabaseURL)
 	if err != nil {
@@ -81,8 +88,12 @@ func Start(config *Config) error {
 	taskServer := tasks.NewTaskManager(60, userService, botService, proxyRepo)
 	go taskServer.Run()
 
-	return http.ListenAndServeTLS(":443", "../../certs/cert.crt", "../../certs/pk.key", router)
-	//return router.Run(config.BindAddr)
+	switch config.BindAddr {
+	case ":443":
+		return http.ListenAndServeTLS(":443", "../../certs/cert.crt", "../../certs/pk.key", router)
+	default:
+		return router.Run(config.BindAddr)
+	}
 }
 
 func setStaticFile(router *gin.Engine) {

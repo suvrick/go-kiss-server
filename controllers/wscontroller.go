@@ -222,17 +222,25 @@ func (c *WSConn) cmdUpdateBot(data map[string]interface{}) {
 */
 func (c *WSConn) cmdPrizeBot(data map[string]interface{}) {
 
-	//fmt.Println(data)
-	//22132982
 	uids := data["uids"].([]interface{})
+
+	id, ok := data["target_id"].(float64)
+	if !ok {
+		return
+	}
+
+	count, ok := data["count"].(float64)
+	if !ok {
+		return
+	}
 
 	prize := client.NewPrizeClientPacket(
 		int(data["good_id"].(float64)),
 		int(data["cost"].(float64)),
-		int(data["target_id"].(float64)),
+		int(id),
 		int(data["data"].(float64)),
 		byte(data["price_type"].(float64)),
-		int(data["count"].(float64)),
+		int(count),
 		data["hash"].(string),
 		data["params"].(string),
 	)
@@ -268,12 +276,14 @@ func (c *WSConn) cmdPrizeBot(data map[string]interface{}) {
 
 */
 func (c *WSConn) cmdViewBot(data map[string]interface{}) {
-	fmt.Println(data)
 
 	uids := data["uids"].([]interface{})
-	targetID := int(data["target_id"].(float64))
+	targetID, ok := data["target_id"].(float64)
+	if !ok {
+		return
+	}
 
-	pack := client.NewViewClientPacket(targetID)
+	pack := client.NewViewClientPacket(int(targetID))
 
 	for _, v := range uids {
 

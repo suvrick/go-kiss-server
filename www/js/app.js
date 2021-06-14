@@ -6,8 +6,6 @@ var app = new Vue({
         self: null,
 
         frameUrl: "",
-        //host: "ws://localhost:8080/ws",
-        host: "wss://suvricksoft.ru/ws",
 
         bots: [],
         botsContainer: [],
@@ -259,7 +257,7 @@ var app = new Vue({
         },
         prizeBotSend(prize) {
 
-            if (!prize.target_id) {
+            if (!this.target_id) {
                 console.log("Null targetID")
                 this.selectedBots = []
                 return
@@ -276,6 +274,13 @@ var app = new Vue({
                 this.client.send(cmd)
         },
         viewBotSend(){
+
+            if (!this.target_id) {
+                console.log("Null targetID")
+                this.selectedBots = []
+                return
+            }
+
             var packet = {
                 type: ClientPacketType.VIEW_BOT_SEND,
                 data: {
@@ -283,6 +288,8 @@ var app = new Vue({
                     target_id: parseInt(this.target_id, 10)
                 }
             }
+
+
             var cmd = JSON.stringify(packet)
             this.client.send(cmd)
         },
@@ -401,7 +408,18 @@ var app = new Vue({
         },
         initSocket() {
 
-            this.client = new WebSocket(this.host);
+            var protocol = 'wss://' 
+
+            if (location.protocol === 'http:') {
+                protocol = 'ws://'
+            }
+
+            host = protocol + location.host + "/ws"
+
+            console.log(host)
+
+
+            this.client = new WebSocket(host);
 
             this.client.onopen = (e) => {
                 console.log("socket open")
@@ -413,11 +431,12 @@ var app = new Vue({
 
             this.client.onclose = function (event) {
                 console.log("socket close")
+                this.initSocket()
             };
 
             this.client.onerror = function (error) {
                 console.log("socket error:", error)
-                location.href = '/login'
+                //location.href = '/login'
             };
         }
     },

@@ -14,7 +14,7 @@ type Config struct {
 	DatabaseURL string `toml:"database_url"`
 }
 
-//go:embed "apiserver.toml"
+//go:embed "config.toml"
 var configToml []byte
 
 // NewConfig ...
