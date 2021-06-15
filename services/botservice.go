@@ -100,6 +100,7 @@ func (s *BotService) SendPrize(botUID string, user *model.User, add_packet *enco
 	}
 
 	gs := ws.NewSocketWithAdditionPacket(bot, packets)
+	gs.SetProxyManager(s.proxyRepository)
 	gs.Go()
 
 	err = s.botRepository.Update(bot)

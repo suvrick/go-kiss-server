@@ -16,6 +16,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
+	"gorm.io/gorm/logger"
 )
 
 // Start ...
@@ -108,7 +109,9 @@ func setStaticFile(router *gin.Engine) {
 
 func createDB(dbURL string) (*gorm.DB, error) {
 
-	db, err := gorm.Open(postgres.Open(dbURL), &gorm.Config{})
+	db, err := gorm.Open(postgres.Open(dbURL), &gorm.Config{
+		Logger: logger.Default.LogMode(logger.Silent),
+	})
 
 	if !db.Migrator().HasTable("bots") {
 		if err := db.Migrator().CreateTable(&models.Bot{}); err != nil {

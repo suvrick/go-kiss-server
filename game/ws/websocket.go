@@ -109,6 +109,12 @@ func (gs *GameSock) Go() {
 
 func (gs *GameSock) connect() error {
 
+	defer func() {
+		if msg := recover(); msg != nil {
+			log.Println("[connect] recover call")
+		}
+	}()
+
 	var dialer wss.Dialer
 	var array []string
 
@@ -143,11 +149,15 @@ func (gs *GameSock) connect() error {
 	con, _, err := dialer.Dial(host, nil)
 
 	if err != nil {
-		gs.proxyManager.UpdateString(array[2], true)
-		return gs.connect()
+		if len(array) == 4 {
+			gs.proxyManager.UpdateString(array[2], true)
+			gs.connect()
+			return nil
+		}
+
+		return err
 	}
 
-	//gs.proxyManager.UpdateString(array[2], false)
 	gs.client = con
 	return err
 }
@@ -222,6 +232,10 @@ func (gs *GameSock) readMessage() {
 }
 
 func (gs *GameSock) sendMessage(pack encode.ClientPacket) {
+
+	if gs.client == nil {
+		return
+	}
 
 	msg := pack.Bytes()
 
