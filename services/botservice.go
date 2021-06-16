@@ -1,7 +1,6 @@
 package services
 
 import (
-	"sync"
 	"time"
 
 	"github.com/suvrick/go-kiss-server/errors"
@@ -18,8 +17,6 @@ type BotService struct {
 	userService     *UserService
 	botRepository   *repositories.BotRepository
 	proxyRepository *repositories.ProxyRepository
-
-	locker *sync.Mutex
 }
 
 // NewBotService ...
@@ -28,15 +25,11 @@ func NewBotService(repo *repositories.BotRepository, us *UserService, pr *reposi
 		userService:     us,
 		botRepository:   repo,
 		proxyRepository: pr,
-		locker:          &sync.Mutex{},
 	}
 }
 
 // Add ...
 func (s *BotService) Add(user *model.User, url string) (*models.Bot, error) {
-
-	s.locker.Lock()
-	defer s.locker.Unlock()
 
 	if err := s.checkActualUser(user); err != nil {
 		return nil, err
@@ -125,9 +118,6 @@ func (s *BotService) AllByUserID(userID int) ([]*models.Bot, error) {
 
 // Delete ...
 func (s *BotService) Delete(botUID string, user *model.User) error {
-
-	s.locker.Lock()
-	defer s.locker.Unlock()
 
 	bot, err := s.botRepository.Find(botUID, user.ID)
 

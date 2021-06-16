@@ -53,12 +53,14 @@ func NewProxyRepository(db *gorm.DB) *ProxyRepository {
 func (repo *ProxyRepository) Add(proxy *Proxy) error {
 	repo.locker.Lock()
 	defer repo.locker.Unlock()
+
 	return repo.db.Table("proxies").Create(proxy).Error
 }
 
 func (repo *ProxyRepository) Get() (*Proxy, error) {
 	repo.locker.Lock()
 	defer repo.locker.Unlock()
+
 	p := &Proxy{}
 	err := repo.db.Table("proxies").Where("use_today = ? AND is_error = ?", false, false).First(p).Error
 	if err != nil {
@@ -93,12 +95,14 @@ func (repo *ProxyRepository) UpdateString(login string, isError bool) error {
 func (repo *ProxyRepository) Update(proxy *Proxy) error {
 	repo.locker.Lock()
 	defer repo.locker.Unlock()
+
 	return repo.db.Table("proxies").Save(proxy).Error
 }
 
 func (repo *ProxyRepository) Delete(proxy *Proxy) error {
 	repo.locker.Lock()
 	defer repo.locker.Unlock()
+
 	return nil
 }
 

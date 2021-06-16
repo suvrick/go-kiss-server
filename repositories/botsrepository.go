@@ -1,6 +1,7 @@
 package repositories
 
 import (
+	"sync"
 	"time"
 
 	"github.com/suvrick/go-kiss-server/game/models"
@@ -11,23 +12,35 @@ import (
 // BotRepository ...
 type BotRepository struct {
 	db *gorm.DB
+
+	locker *sync.Mutex
 }
 
 // NewBotRepository ...
 func NewBotRepository(db *gorm.DB) *BotRepository {
 	return &BotRepository{
 		db: db,
+
+		locker: &sync.Mutex{},
 	}
 }
 
 // Add ...
 func (repo *BotRepository) Add(bot *models.Bot) (string, error) {
+
+	repo.locker.Lock()
+	defer repo.locker.Unlock()
+
 	result := repo.db.Table("bots").Create(bot)
 	return bot.UID, result.Error
 }
 
 // Update ...
 func (repo *BotRepository) Update(bot *models.Bot) error {
+
+	repo.locker.Lock()
+	defer repo.locker.Unlock()
+
 	nb := &models.Bot{}
 	repo.db.First(nb, "uid = ?", bot.UID)
 
@@ -39,6 +52,10 @@ func (repo *BotRepository) Update(bot *models.Bot) error {
 
 // All ...
 func (repo *BotRepository) All(userID int) ([]*models.Bot, error) {
+
+	repo.locker.Lock()
+	defer repo.locker.Unlock()
+
 	bots := make([]*models.Bot, 0)
 	result := repo.db.Preload("Logger").Find(&bots, "user_id = ?", userID)
 	return bots, result.Error
@@ -46,6 +63,10 @@ func (repo *BotRepository) All(userID int) ([]*models.Bot, error) {
 
 // Find ...
 func (repo *BotRepository) Find(botUID string, userID int) (*models.Bot, error) {
+
+	repo.locker.Lock()
+	defer repo.locker.Unlock()
+
 	bot := &models.Bot{}
 	err := repo.db.Preload("Logger").First(bot, "uid = ? AND user_id = ?", botUID, userID).Error
 	return bot, err
@@ -53,6 +74,10 @@ func (repo *BotRepository) Find(botUID string, userID int) (*models.Bot, error) 
 
 // Delete ...
 func (repo *BotRepository) Delete(bot *models.Bot) error {
+
+	repo.locker.Lock()
+	defer repo.locker.Unlock()
+
 	repo.db.Unscoped().Table("logger_lines").Where("bot_id", bot.ID).Delete(&[]models.LoggerLine{})
 	return repo.db.Unscoped().Where("uid = ?", bot.UID).Delete(&models.Bot{}).Error
 }
